@@ -10,21 +10,17 @@ export function formatTanggalIndo(dateStr, includeTime = false) {
   const d = new Date(dateStr.replace(' ', 'T'));
   if (isNaN(d.getTime())) return dateStr;
 
-  const bulan = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-    'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
-  ];
-
-  const tgl = d.getDate();
-  const bln = bulan[d.getMonth()];
+  const tgl = String(d.getDate()).padStart(2, '0');
+  const bln = String(d.getMonth() + 1).padStart(2, '0');
   const thn = d.getFullYear();
   const jam = String(d.getHours()).padStart(2, '0');
   const mnt = String(d.getMinutes()).padStart(2, '0');
 
+  // Format hari/bulan/tahun: dd/mm/yyyy
   if (includeTime) {
-    return `${tgl} ${bln} ${thn}, ${jam}:${mnt} WIB`;
+    return `${tgl}/${bln}/${thn}, ${jam}:${mnt} WIB`;
   }
-  return `${tgl} ${bln} ${thn}`;
+  return `${tgl}/${bln}/${thn}`;
 }
 
 export function formatJamIndo(dateStr) {
