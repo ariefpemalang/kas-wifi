@@ -1,0 +1,42 @@
+// generate-icons.js
+import fs from 'fs';
+import path from 'path';
+
+// Create a nice SVG icon for KAS WIFI Mobile
+const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="50%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#090d16" />
+    </linearGradient>
+    <linearGradient id="wifi-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#3b82f6" />
+    </linearGradient>
+    <linearGradient id="gold-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="512" height="512" rx="128" fill="url(#bg)"/>
+  <rect x="16" y="16" width="480" height="480" rx="112" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="4"/>
+
+  <!-- WiFi Waves -->
+  <path d="M136 210 C 200 150, 312 150, 376 210" fill="none" stroke="url(#wifi-grad)" stroke-width="32" stroke-linecap="round"/>
+  <path d="M176 260 C 224 215, 288 215, 336 260" fill="none" stroke="url(#wifi-grad)" stroke-width="28" stroke-linecap="round"/>
+  <path d="M216 310 C 238 285, 274 285, 296 310" fill="none" stroke="url(#wifi-grad)" stroke-width="24" stroke-linecap="round"/>
+  
+  <!-- Central Dot / Cashier Coin -->
+  <circle cx="256" cy="365" r="32" fill="url(#gold-grad)" />
+  <circle cx="256" cy="365" r="24" fill="none" stroke="#fff" stroke-width="3" opacity="0.6"/>
+  <text x="256" y="375" font-family="Arial, sans-serif" font-weight="900" font-size="28" fill="#78350f" text-anchor="middle">Rp</text>
+  
+  <!-- Text KAS WIFI -->
+  <text x="256" y="445" font-family="Arial, sans-serif" font-weight="900" font-size="34" fill="#ffffff" letter-spacing="4" text-anchor="middle">KAS WIFI</text>
+</svg>`;
+
+const publicDir = path.resolve('public');
+fs.writeFileSync(path.join(publicDir, 'icon.svg'), svgIcon);
+console.log('Icon SVG generated successfully');

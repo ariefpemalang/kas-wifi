@@ -1,0 +1,12 @@
+node_modules
+dist
+.DS_Store
+Thumbs.db
+
+# Android
+android/app/build
+android/.gradle
+android/build
+android/captures
+android/.idea
+android/local.properties

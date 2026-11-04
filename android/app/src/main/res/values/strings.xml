@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">KAS WIFI Mobile</string>
+    <string name="title_activity_main">KAS WIFI Mobile</string>
+    <string name="package_name">com.arcell.kaswifimobile</string>
+    <string name="custom_url_scheme">com.arcell.kaswifimobile</string>
+</resources>

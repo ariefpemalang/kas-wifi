@@ -1,0 +1,16 @@
+{
+  "short_name": "Kas WiFi",
+  "name": "KAS WIFI Mobile - Pembukuan & Kasir RT/RW Net",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512 any"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#090d16",
+  "theme_color": "#090d16",
+  "display": "standalone",
+  "orientation": "portrait"
+}

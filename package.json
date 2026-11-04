@@ -1,0 +1,38 @@
+{
+  "name": "kas-wifi-mobile",
+  "version": "1.0.0",
+  "description": "Aplikasi Mobile Kasir & Pembukuan Kas WiFi (RT/RW Net, Hotspot Voucher, Member)",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview",
+    "cap:sync": "cap sync",
+    "cap:add:android": "cap add android",
+    "cap:open:android": "cap open android"
+  },
+  "keywords": [
+    "kas-wifi",
+    "kasir-wifi",
+    "voucher",
+    "rtrwnet"
+  ],
+  "author": "PROJECT ARCELL",
+  "license": "ISC",
+  "dependencies": {
+    "@capacitor/core": "^8.6.0",
+    "lucide-react": "^1.68.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/cli": "^8.6.0",
+    "@tailwindcss/vite": "^4.3.4",
+    "@vitejs/plugin-react": "^6.2.1",
+    "autoprefixer": "^10.6.2",
+    "postcss": "^8.5.32",
+    "tailwindcss": "^4.3.4",
+    "vite": "^8.3.5"
+  }
+}
