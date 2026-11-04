@@ -1,82 +1,57 @@
-# 📶 KAS WIFI Mobile
+# 📶 KAS WIFI Mobile (Proxmox CT 2201)
 
-Aplikasi Mobile Kasir & Pembukuan Kas Multi-Wallet khusus usaha **RT/RW Net, Hotspot Voucher, dan Internet Rumahan**.
+Aplikasi Mobile Android untuk **KAS WIFI** yang sudah live di **Proxmox CT 2201** (`http://192.168.66.18`).
 
-Aplikasi ini dibuat khusus untuk folder:
+Lokasi folder:
 `c:\PROJECT ARCELL\APLIKASI KAS WIFI\kas-wifi-mobile`
-dan terhubung langsung dengan backend PHP & MySQL di folder:
-`c:\PROJECT ARCELL\APLIKASI KAS WIFI\kas-wifi`
 
 ---
 
-## ✨ Fitur Utama Mobile
-
-1. **📱 Multi-Wallet Bawaan:**
-   - 💵 **TUNAI** (Kas fisik laci kasir)
-   - 📱 **DANA** (E-Wallet DANA)
-   - 💳 **QRIN** (QRIS Merchant)
-   - Kartu total saldo kasir bersih + toggle privasi saldo (sembunyikan nominal saat dilihat pembeli).
-
-2. **⚡ Kasir Cepat (Quick Cashier Action):**
-   - **+ Pemasukan:** Penjualan voucher 2 Jam, 5 Jam, 12 Jam, 24 Jam, Langganan Bulanan Member, Jasa Setting / Pasang Baru. Dilengkapi tombol nominal cepat (+2rb, +5rb, +10rb, +20rb, +50rb, +100rb).
-   - **- Pengeluaran:** Biaya operasional, Bandwidth ISP, Listrik & Token PLN, Kabel/Router, Gaji Kasir.
-   - **⇄ Transfer Dompet:** Pindahkan saldo antar dompet (misal: Tarik saldo QRIN/DANA ke Kas Laci Tunai).
-   - **🧾 Struk / Nota Kasir:** Format struk thermal 58mm, kirim nota otomatis ke **WhatsApp pembeli**, cetak struk via printer Bluetooth / PDF.
-
-3. **📶 Dual-Mode (Online & Offline Standalone):**
-   - **Mode Standalone / Offline:** Tetap bisa input transaksi kasir saat HP tidak terhubung ke PC / listrik mati. Data tersimpan aman di HP.
-   - **Mode Online & Sync:** Sinkronkan seluruh data transaksi offline ke database MySQL server PHP di komputer dengan 1 klik.
-
-4. **📊 Laporan & Mutasi Realtime:**
-   - Rekap Pemasukan, Pengeluaran, dan Laba Bersih (Hari Ini & Bulan Ini).
-   - Mutasi per dompet (Total Masuk, Keluar, Saldo Akhir).
-   - Breakdown kategori voucher & pengeluaran terlaris.
+## 🎯 Konfigurasi Server
+- **Server Proxmox Live:** `http://192.168.66.18`
+- **Tipe Aplikasi Android:** Native Android App via Capacitor
+- **Fitur Khusus:**
+  - Full-screen tampilan aplikasi Kas WiFi tanpa address bar browser.
+  - Sudah dikonfigurasi `android:usesCleartextTraffic="true"` sehingga koneksi HTTP ke `192.168.66.18` diizinkan penuh oleh Android.
+  - Dilengkapi GitHub Actions CI/CD (`.github/workflows/build-apk.yml`) untuk build file APK secara otomatis di cloud.
 
 ---
 
-## 🚀 Cara Menjalankan & Memakai di HP
+## 🚀 2 Cara Mendapatkan & Menggunakan APK di HP Android
 
-### Opsi 1: Pakai Langsung di HP Android via Wi-Fi (Paling Praktis)
-1. Hubungkan HP Android Anda ke **Wi-Fi yang sama** dengan komputer ini.
-2. Klik dua kali file:
+### Cara 1: Build Otomatis Jadi APK via GitHub (Sangat Mudah & Gratis)
+Sama seperti aplikasi `AR Service` Anda sebelumnya, folder ini sudah dilengkapi skrip build APK otomatis:
+1. Buat repository baru di akun GitHub Anda (misal: `kas-wifi-mobile`).
+2. Di folder ini, jalankan perintah git remote:
+   ```bash
+   git remote add origin https://github.com/USERNAME_ANDA/kas-wifi-mobile.git
+   git branch -M main
+   git push -u origin main
    ```
-   JALANKAN_MOBILE.bat
-   ```
-   *(atau buka CMD di folder ini lalu ketik `npm run dev`)*
-3. Di layar terminal akan muncul alamat IP lokal, contoh:
-   ```
-   ➜  Network: http://192.168.1.5:5173/
-   ```
-4. Buka browser **Google Chrome** di HP Anda, ketik alamat tersebut (`http://192.168.1.5:5173`).
-5. **Pasang sebagai Aplikasi (APK PWA):**
-   - Di Chrome HP, tap menu titik tiga (⋮) di pojok kanan atas.
-   - Pilih **"Tambahkan ke Layar Utama"** / **"Install App"**.
-   - Ikon **KAS WIFI** akan muncul di menu aplikasi HP Anda seperti aplikasi native dari Play Store dan bisa dibuka secara mandiri!
+3. Buka tab **Actions** di repository GitHub Anda.
+4. GitHub Actions akan otomatis meng-compile Android Native dan menghasilkan file:
+   - **`KAS-WIFI-Release-APK`** (File `.apk` siap download dan install di HP).
 
 ---
 
-### Opsi 2: Build Menjadi File APK Android Native (Capacitor)
-Folder native Android sudah disiapkan di dalam folder `android/`.
-1. Pastikan komputer Anda terpasang **Android Studio**.
-2. Klik dua kali file:
-   ```
-   BUKA_ANDROID_STUDIO.bat
-   ```
-   *(atau ketik `npx cap open android` di terminal)*
-3. Android Studio akan terbuka memuat proyek aplikasi.
-4. Di Android Studio, pilih menu:
-   **Build** > **Build Bundle(s) / APK(s)** > **Build APK(s)**.
-5. File `.apk` siap diinstal di semua smartphone Android!
+### Cara 2: Build APK Lewat Android Studio di Komputer
+Jika di komputer Anda terpasang Android Studio:
+1. Klik file:
+   `BUKA_ANDROID_STUDIO.bat`
+2. Android Studio akan terbuka memuat folder `android/`.
+3. Klik menu **Build** > **Build Bundle(s) / APK(s)** > **Build APK(s)**.
+4. Tunggu beberapa detik, APK akan terbentuk di folder:
+   `android/app/build/outputs/apk/debug/app-debug.apk`
 
 ---
 
-## 🔌 Menghubungkan ke Server PHP Kas WiFi di PC
-1. Buka menu **Pengaturan** (ikon gerigi di pojok kanan atas aplikasi mobile).
-2. Ubah mode menjadi **Online (Sync MySQL)**.
-3. Masukkan URL server komputer Anda, contoh:
-   `http://192.168.1.5/kas-wifi` *(ganti dengan IP Wi-Fi PC Anda)*.
-4. Tap tombol **"Tes IP"** untuk memastikan koneksi berhasil.
-5. Tap **"Simpan Pengaturan"**. Seluruh transaksi akan otomatis terhubung ke database `kas_wifi` MySQL!
-
----
-*Dibuat oleh PROJECT ARCELL*
+### Cara 3: Pasang Instan di HP (Tanpa Perlu Compile APK)
+1. Sambungkan HP ke Wi-Fi yang satu jaringan dengan `192.168.66.18`.
+2. Buka browser **Google Chrome** di HP Anda.
+3. Buka alamat:
+   ```
+   http://192.168.66.18
+   ```
+4. Tekan tombol titik tiga (**⋮**) di pojok kanan atas Chrome HP.
+5. Pilih **"Tambahkan ke Layar Utama"** / **"Install App"**.
+6. Ikon **KAS WIFI** akan langsung muncul di menu aplikasi HP Anda dan bisa dibuka fullscreen!
