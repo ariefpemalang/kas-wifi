@@ -1,6 +1,7 @@
-# 📶 KAS WIFI Mobile (Proxmox CT 2201)
+# 📶 KAS WIFI Mobile (Live Web Wrapper)
 
-Aplikasi Mobile Android untuk **KAS WIFI** yang sudah live di **Proxmox CT 2201** (`http://192.168.66.18`).
+Aplikasi Mobile Android untuk **KAS WIFI** yang terhubung langsung ke website produksi:
+👉 **`https://kaswifi.my.id`**
 
 Lokasi folder:
 `c:\PROJECT ARCELL\APLIKASI KAS WIFI\kas-wifi-mobile`
@@ -8,11 +9,12 @@ Lokasi folder:
 ---
 
 ## 🎯 Konfigurasi Server
-- **Server Proxmox Live:** `http://192.168.66.18`
-- **Tipe Aplikasi Android:** Native Android App via Capacitor
+- **Server Live Website:** `https://kaswifi.my.id` (PHP + MySQL Live)
+- **Tipe Aplikasi Android:** Native Android App via Capacitor WebView
 - **Fitur Khusus:**
   - Full-screen tampilan aplikasi Kas WiFi tanpa address bar browser.
-  - Sudah dikonfigurasi `android:usesCleartextTraffic="true"` sehingga koneksi HTTP ke `192.168.66.18` diizinkan penuh oleh Android.
+  - Membuka langsung halaman login `https://kaswifi.my.id/login.php` dan dashboard admin.
+  - `allowNavigation: ["kaswifi.my.id", "*.kaswifi.my.id"]` sehingga semua navigasi dan transaksi tetap berada di dalam aplikasi.
   - Dilengkapi GitHub Actions CI/CD (`.github/workflows/build-apk.yml`) untuk build file APK secara otomatis di cloud.
 
 ---
