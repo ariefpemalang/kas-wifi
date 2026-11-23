@@ -35,9 +35,9 @@ export function Header({ mode, setMode, onOpenSettings, isSyncing, onSync, pendi
               <h1 className="font-extrabold text-lg tracking-tight text-white">
                 KAS <span className="text-amber-400">WIFI</span>
               </h1>
-              <span className="text-[10px] font-bold bg-emerald-500 text-white px-1.5 py-0.5 rounded-full uppercase tracking-wider flex items-center space-x-0.5">
-                <Zap className="w-2.5 h-2.5 fill-current" />
-                <span>Supabase</span>
+              <span className="text-[10px] font-bold bg-emerald-500/90 text-white px-2 py-0.5 rounded-full tracking-wider flex items-center space-x-1 shadow-xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-200 animate-pulse"></span>
+                <span>192.168.66.18</span>
               </span>
             </div>
             <p className="text-[11px] text-blue-200/90 font-medium">{currentTime}</p>
@@ -64,7 +64,7 @@ export function Header({ mode, setMode, onOpenSettings, isSyncing, onSync, pendi
             onClick={onRefresh}
             disabled={isSyncing}
             className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors border border-white/10"
-            title="Sinkronkan ulang dari Supabase"
+            title="Sinkronkan ulang data dari server"
           >
             <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
           </button>
@@ -73,7 +73,7 @@ export function Header({ mode, setMode, onOpenSettings, isSyncing, onSync, pendi
           <button
             onClick={onOpenSettings}
             className="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all bg-white/10 hover:bg-white/20 border border-white/15 text-white"
-            title="Klik untuk membuka status Supabase Cloud"
+            title="Klik untuk membuka pengaturan server & sinkronisasi"
           >
             <span className={`w-2 h-2 rounded-full ${mode === 'online' ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></span>
             <span className="text-[11px]">{mode === 'online' ? 'Online' : 'Offline'}</span>

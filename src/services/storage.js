@@ -14,12 +14,13 @@ const STORAGE_KEYS = {
 };
 
 const DEFAULT_WALLETS = [
-  { id: 1, name: 'TUNAI', initial_balance: 0, current_balance: 0 },
-  { id: 2, name: 'DANA', initial_balance: 0, current_balance: 0 },
-  { id: 3, name: 'QRIN', initial_balance: 0, current_balance: 0 }
+  { id: 1, name: 'TUNAI', initial_balance: 0, current_balance: 7160000 },
+  { id: 2, name: 'DANA', initial_balance: 0, current_balance: 2247701 },
+  { id: 3, name: 'QRIN', initial_balance: 0, current_balance: 1141000 }
 ];
 
 const DEFAULT_CATEGORIES = [
+  { id: 18, name: 'WIFI', type: 'pemasukan' },
   { id: 1, name: 'Voucher 2 Jam', type: 'pemasukan' },
   { id: 2, name: 'Voucher 5 Jam', type: 'pemasukan' },
   { id: 3, name: 'Voucher 12 Jam', type: 'pemasukan' },
@@ -33,7 +34,8 @@ const DEFAULT_CATEGORIES = [
   { id: 11, name: 'Gaji / Uang Jaga / Kasir', type: 'pengeluaran' },
   { id: 12, name: 'Konsumsi & Operasional', type: 'pengeluaran' },
   { id: 13, name: 'Perawatan / Maintenance', type: 'pengeluaran' },
-  { id: 14, name: 'Pengeluaran Lain-lain', type: 'pengeluaran' }
+  { id: 14, name: 'Pengeluaran Lain-lain', type: 'pengeluaran' },
+  { id: 19, name: 'Patcore', type: 'pengeluaran' }
 ];
 
 const DEFAULT_SETTINGS = {
@@ -46,7 +48,7 @@ const DEFAULT_SETTINGS = {
 
 export const Storage = {
   getServerUrl() {
-    return localStorage.getItem(STORAGE_KEYS.SERVER_URL) || 'https://kaswifi.my.id';
+    return localStorage.getItem(STORAGE_KEYS.SERVER_URL) || 'http://192.168.66.18';
   },
 
   setServerUrl(url) {

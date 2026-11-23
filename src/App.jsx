@@ -13,7 +13,6 @@ import { SettingsModal } from './components/SettingsModal';
 import { BottomNav } from './components/BottomNav';
 import { Storage } from './services/storage';
 import { Api } from './services/api';
-import { SupabaseService, supabase } from './services/supabase';
 
 export function App() {
   const [activeTab, setActiveTab] = useState('dashboard'); // dashboard, transactions, reports, categories
@@ -73,10 +72,10 @@ export function App() {
   useEffect(() => {
     loadData();
 
-    // Berlangganan Real-time WebSocket Supabase
-    const channel = SupabaseService.subscribeRealtime(() => {
+    // Auto-sync interval dengan server (setiap 25 detik)
+    const interval = setInterval(() => {
       loadData();
-    });
+    }, 25000);
 
     // Deteksi koneksi internet perangkat
     const handleOnline = () => {
@@ -89,7 +88,7 @@ export function App() {
     window.addEventListener('offline', handleOffline);
 
     return () => {
-      if (channel) supabase.removeChannel(channel);
+      clearInterval(interval);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
@@ -298,7 +297,7 @@ export function App() {
         categories={categories}
         onUpdateCategories={async (newCats) => {
           setCategories(newCats);
-          await SupabaseService.saveAll({ categories: newCats });
+          Storage.saveCategories(newCats);
           loadData();
         }}
       />

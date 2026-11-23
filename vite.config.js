@@ -10,6 +10,15 @@ export default defineConfig({
   ],
   server: {
     port: 5173,
-    host: true
+    host: true,
+    proxy: {
+      '/server-api': {
+        target: 'http://192.168.66.18',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/server-api/, ''),
+        cookieDomainRewrite: ''
+      }
+    }
   }
 });
+
