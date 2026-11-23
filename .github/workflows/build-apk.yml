@@ -11,6 +11,9 @@ jobs:
   build-apk:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
@@ -77,3 +80,36 @@ jobs:
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 14
           if-no-files-found: warn
+
+      - name: Prepare APK Release Files
+        run: |
+          cp android/app/build/outputs/apk/release/app-release.apk KAS-WIFI.apk
+
+      - name: Create or Update GitHub Release with APK
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        uses: softprops/action-gh-release@v2
+        continue-on-error: true
+        with:
+          tag_name: latest
+          name: KAS WIFI Mobile APK (Latest)
+          body: |
+            ## 📶 KAS WIFI Mobile APK (Official)
+
+            Aplikasi Mobile Android untuk **KAS WIFI** (Aplikasi Pembukuan Kas Multi-Wallet RT/RW Net).
+            Server Live: `https://kaswifi.my.id`
+
+            ### ✅ Cara Install:
+            1. Download file **`KAS-WIFI.apk`** di bawah ini.
+            2. Pindahkan ke HP Android.
+            3. Buka file APK → Install (Izinkan "Install dari sumber tidak dikenal" jika diminta).
+
+            ### 📋 Info Rilis:
+            - **Package ID:** `com.arcell.kaswifimobile`
+            - **Target Server:** `https://kaswifi.my.id`
+            - **Build:** Release APK (Signed)
+          files: |
+            KAS-WIFI.apk
+            android/app/build/outputs/apk/release/app-release.apk
+            android/app/build/outputs/apk/debug/app-debug.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

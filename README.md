@@ -19,9 +19,18 @@ Lokasi folder:
 
 ---
 
-## 🚀 2 Cara Mendapatkan & Menggunakan APK di HP Android
+## 🚀 Cara Download & Install APK di HP Android
 
-### Cara 1: Build Otomatis Jadi APK via GitHub (Sangat Mudah & Gratis)
+### 📲 Download Langsung (GitHub Releases 1-Klik)
+Download langsung file APK terbaru tanpa perlu login atau ekstrak ZIP:
+👉 **[Download KAS-WIFI.apk (Latest)](https://github.com/ariefpemalang/kas-wifi/releases/download/latest/KAS-WIFI.apk)**
+
+Atau kunjungi halaman rilis:
+👉 **[GitHub Releases - KAS WIFI Mobile](https://github.com/ariefpemalang/kas-wifi/releases)**
+
+---
+
+### Cara 1: Build Otomatis Jadi APK via GitHub Actions
 Sama seperti aplikasi `AR Service` Anda sebelumnya, folder ini sudah dilengkapi skrip build APK otomatis:
 1. Buat repository baru di akun GitHub Anda (misal: `kas-wifi-mobile`).
 2. Di folder ini, jalankan perintah git remote:
