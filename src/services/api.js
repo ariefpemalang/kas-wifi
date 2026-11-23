@@ -1,73 +1,97 @@
 // src/services/api.js
-// Client API untuk menghubungkan Mobile App dengan Backend PHP Kas WiFi di PC
+// Client API untuk sinkronisasi Mobile App dengan Backend PHP Kas WiFi di Server / PC
 import { Storage } from './storage';
 
 export const Api = {
+  // Kandidat URL server kas wifi
+  SERVER_CANDIDATES: [
+    'https://kaswifi.my.id',
+    'http://192.168.66.18',
+    'http://localhost/kas-wifi',
+    'http://127.0.0.1/kas-wifi'
+  ],
+
   async testConnection(serverUrl) {
-    const url = serverUrl || Storage.getServerUrl();
+    const url = (serverUrl || Storage.getServerUrl()).replace(/\/+$/, '');
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
+
       const res = await fetch(`${url}/api/index.php?action=ping`, {
         method: 'GET',
-        headers: { 'Accept': 'application/json' }
+        headers: { 'Accept': 'application/json' },
+        signal: controller.signal
       });
-      if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+      clearTimeout(timeoutId);
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      return { success: true, data };
+      return { success: true, data, url };
     } catch (err) {
-      return { success: false, error: err.message };
+      return { success: false, error: err.message, url };
     }
   },
 
-  async login(username, password) {
-    const url = Storage.getServerUrl();
-    const mode = Storage.getMode();
+  // Cari otomatis server yang aktif
+  async findActiveServer() {
+    const current = Storage.getServerUrl();
+    const testCurrent = await this.testConnection(current);
+    if (testCurrent.success) return current;
 
-    if (mode === 'offline') {
-      // Offline fallback login
-      if (username === 'admin' && password === 'admin') {
-        const user = { id: 1, username: 'admin', nama_lengkap: 'Administrator WiFi', role: 'admin' };
-        Storage.setUser(user);
-        return { success: true, user };
+    for (const cand of this.SERVER_CANDIDATES) {
+      if (cand === current) continue;
+      const test = await this.testConnection(cand);
+      if (test.success) {
+        Storage.setServerUrl(cand);
+        return cand;
       }
-      return { success: false, message: 'Mode offline: gunakan username: admin & password: admin' };
     }
-
-    try {
-      const res = await fetch(`${url}/api/index.php?action=login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
-      const data = await res.json();
-      if (res.ok && data.status === 'success') {
-        Storage.setUser(data.user);
-        return { success: true, user: data.user };
-      }
-      return { success: false, message: data.message || 'Login gagal' };
-    } catch (err) {
-      return { success: false, message: 'Gagal terhubung ke server kas-wifi: ' + err.message };
-    }
+    return current;
   },
 
   async getDashboardSummary() {
     const mode = Storage.getMode();
-    const url = Storage.getServerUrl();
+    const url = Storage.getServerUrl().replace(/\/+$/, '');
 
     if (mode === 'online') {
       try {
-        const res = await fetch(`${url}/api/index.php?action=summary`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+        const res = await fetch(`${url}/api/index.php?action=summary`, {
+          headers: { 'Accept': 'application/json' },
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
         if (res.ok) {
           const json = await res.json();
-          if (json.status === 'success') {
+          if (json.status === 'success' && json.data) {
+            // Update cache lokal
+            if (json.data.wallets) Storage.saveWallets(json.data.wallets);
+            if (json.data.categories) Storage.saveCategories(json.data.categories);
+            if (json.data.recent_transactions) {
+              const fullTxs = Storage.getTransactions();
+              if (fullTxs.length === 0) {
+                Storage.saveTransactions(json.data.recent_transactions.map(t => ({ ...t, synced: true })));
+              }
+            }
+            if (json.data.recent_transfers) {
+              const fullTrs = Storage.getTransfers();
+              if (fullTrs.length === 0) {
+                Storage.saveTransfers(json.data.recent_transfers.map(tr => ({ ...tr, synced: true })));
+              }
+            }
+
             return { success: true, data: json.data, source: 'server' };
           }
         }
       } catch (e) {
-        console.warn('API error, falling back to local storage', e);
+        console.warn('Gagal terhubung ke API server, beralih ke cache lokal:', e.message);
       }
     }
 
-    // Local / Offline calculation
+    // Perhitungan kalkulasi lokal jika offline
     const computed = Storage.computeWalletBalances();
     const transactions = Storage.getTransactions();
     const transfers = Storage.getTransfers();
@@ -115,11 +139,34 @@ export const Api = {
     };
   },
 
+  async getTransactions(params = {}) {
+    const mode = Storage.getMode();
+    const url = Storage.getServerUrl().replace(/\/+$/, '');
+
+    if (mode === 'online') {
+      try {
+        const query = new URLSearchParams(params).toString();
+        const res = await fetch(`${url}/api/index.php?action=transactions&${query}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.status === 'success' && Array.isArray(json.data)) {
+            // Update local storage
+            Storage.saveTransactions(json.data.map(t => ({ ...t, synced: true })));
+            return { success: true, data: json.data, source: 'server' };
+          }
+        }
+      } catch (err) {
+        console.warn('Gagal ambil transaksi server, gunakan data lokal:', err.message);
+      }
+    }
+
+    return { success: true, data: Storage.getTransactions(), source: 'local' };
+  },
+
   async createTransaction(tx) {
     const mode = Storage.getMode();
-    const url = Storage.getServerUrl();
+    const url = Storage.getServerUrl().replace(/\/+$/, '');
 
-    // Simpan di local storage dulu
     const localTx = Storage.addTransaction(tx);
 
     if (mode === 'online') {
@@ -141,7 +188,7 @@ export const Api = {
           return { success: true, data: localTx, synced: true };
         }
       } catch (err) {
-        console.warn('Gagal sync ke server saat ini, disimpan di antrean offline', err);
+        console.warn('Gagal simpan ke server, transaksi disimpan di antrean offline:', err.message);
       }
     }
 
@@ -150,7 +197,7 @@ export const Api = {
 
   async createTransfer(tr) {
     const mode = Storage.getMode();
-    const url = Storage.getServerUrl();
+    const url = Storage.getServerUrl().replace(/\/+$/, '');
 
     const localTr = Storage.addTransfer(tr);
 
@@ -166,15 +213,32 @@ export const Api = {
           return { success: true, data: localTr, synced: true };
         }
       } catch (err) {
-        console.warn('Gagal sync transfer ke server, disimpan offline', err);
+        console.warn('Gagal kirim transfer ke server, disimpan offline:', err.message);
       }
     }
 
     return { success: true, data: localTr, synced: false };
   },
 
+  async deleteTransaction(id) {
+    const mode = Storage.getMode();
+    const url = Storage.getServerUrl().replace(/\/+$/, '');
+
+    Storage.deleteTransaction(id);
+
+    if (mode === 'online') {
+      try {
+        await fetch(`${url}/api/index.php?action=delete_transaction&id=${id}`, {
+          method: 'POST'
+        });
+      } catch (e) {
+        console.warn('Gagal hapus transaksi di server:', e);
+      }
+    }
+  },
+
   async syncOfflineData() {
-    const url = Storage.getServerUrl();
+    const url = Storage.getServerUrl().replace(/\/+$/, '');
     const queue = Storage.getOfflineQueue();
 
     if (queue.transactions.length === 0 && queue.transfers.length === 0) {
@@ -189,7 +253,6 @@ export const Api = {
       });
       const data = await res.json();
       if (res.ok && data.status === 'success') {
-        // Bersihkan antrean offline
         Storage.saveOfflineQueue({ transactions: [], transfers: [] });
         return { success: true, message: data.message || 'Sinkronisasi berhasil!' };
       }

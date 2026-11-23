@@ -31,8 +31,8 @@ export function TransferModal({ isOpen, onClose, onSave, wallets = [] }) {
 
   if (!isOpen) return null;
 
-  const fromWallet = wallets.find(w => w.id === fromWalletId);
-  const toWallet = wallets.find(w => w.id === toWalletId);
+  const fromWallet = wallets.find((w) => w.id === fromWalletId);
+  const toWallet = wallets.find((w) => w.id === toWalletId);
   const sourceBalance = fromWallet?.current_balance || 0;
 
   const handleSubmit = (e) => {
@@ -47,9 +47,10 @@ export function TransferModal({ isOpen, onClose, onSave, wallets = [] }) {
       alert('Nominal transfer harus lebih dari 0!');
       return;
     }
-    if (numAmount > sourceBalance) {
-      alert(`Saldo ${fromWallet?.name} tidak mencukupi! Maksimal transfer: ${formatRupiah(sourceBalance)}`);
-      return;
+    if (numAmount > sourceBalance && sourceBalance > 0) {
+      if (!confirm(`Saldo ${fromWallet?.name} (${formatRupiah(sourceBalance)}) lebih kecil dari nominal transfer. Tetap lanjutkan?`)) {
+        return;
+      }
     }
 
     onSave({
@@ -69,161 +70,135 @@ export function TransferModal({ isOpen, onClose, onSave, wallets = [] }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-0 sm:p-4">
-      <div className="w-full max-w-lg bg-slate-900 border-t sm:border border-slate-700/80 rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col animate-in slide-in-from-bottom duration-200">
-        
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-xs p-0 sm:p-4">
+      <div className="w-full max-w-lg bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col border border-slate-200">
         {/* Header */}
-        <div className="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center">
+        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
               <ArrowLeftRight className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="font-bold text-sm text-white">Transfer Antar Dompet</h2>
-              <p className="text-[11px] text-slate-400">Pindahkan saldo (Contoh: QRIN / DANA → Tunai)</p>
+              <h2 className="font-bold text-sm text-slate-800">Transfer Antar Dompet</h2>
+              <p className="text-[11px] text-slate-500">Pindah saldo kasir (misal: Tarik QRIS ke Tunai)</p>
             </div>
           </div>
-          <button 
+          <button
             onClick={onClose}
-            className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white"
+            className="p-1.5 rounded-xl bg-slate-200/60 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Body */}
+        {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto">
-          {/* Source and Destination */}
-          <div className="grid grid-cols-5 gap-2 items-center">
-            <div className="col-span-2">
-              <label className="block text-[11px] font-bold text-slate-400 mb-1">
-                Dari (Sumber)
+          {/* Dompet Asal & Tujuan */}
+          <div className="grid grid-cols-1 gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-200">
+            {/* Sumber */}
+            <div>
+              <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                Dari Dompet (Sumber)
               </label>
               <select
                 value={fromWalletId}
                 onChange={(e) => setFromWalletId(Number(e.target.value))}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-xs font-bold text-white focus:outline-none focus:border-cyan-500"
+                className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
               >
                 {wallets.map((w) => (
                   <option key={w.id} value={w.id}>
-                    {w.name} ({formatRupiah(w.current_balance)})
+                    {w.name} (Tersedia: {formatRupiah(w.current_balance || 0)})
                   </option>
                 ))}
               </select>
             </div>
 
-            <div className="col-span-1 flex justify-center pt-4">
+            {/* Tombol Swap */}
+            <div className="flex justify-center -my-1">
               <button
                 type="button"
                 onClick={handleSwap}
-                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 active:rotate-180 transition-all"
-                title="Tukar Asal dan Tujuan"
+                className="p-1.5 rounded-full bg-white hover:bg-slate-100 text-blue-600 border border-slate-200 shadow-xs transition-colors"
+                title="Tukar Dompet"
               >
-                <ArrowLeftRight className="w-4 h-4" />
+                <ArrowLeftRight className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            <div className="col-span-2">
-              <label className="block text-[11px] font-bold text-slate-400 mb-1">
-                Ke (Tujuan)
+            {/* Tujuan */}
+            <div>
+              <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                Ke Dompet (Tujuan)
               </label>
               <select
                 value={toWalletId}
                 onChange={(e) => setToWalletId(Number(e.target.value))}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-xs font-bold text-white focus:outline-none focus:border-cyan-500"
+                className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
               >
                 {wallets.map((w) => (
-                  <option key={w.id} value={w.id}>
-                    {w.name}
+                  <option key={w.id} value={w.id} disabled={w.id === fromWalletId}>
+                    {w.name} {w.id === fromWalletId ? '(Sama dengan asal)' : ''}
                   </option>
                 ))}
               </select>
             </div>
           </div>
 
-          {/* Saldo info */}
-          <div className="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-between text-xs">
-            <span className="text-slate-400">Saldo {fromWallet?.name} saat ini:</span>
-            <span className="font-extrabold text-blue-300">{formatRupiah(sourceBalance)}</span>
-          </div>
-
-          {/* Nominal */}
+          {/* Nominal Transfer */}
           <div>
-            <label className="block text-xs font-bold text-slate-300 mb-1">
-              Nominal Transfer (Rp)
+            <label className="block text-xs font-bold text-slate-700 mb-1">
+              Nominal Transfer (Rp) <span className="text-rose-500">*</span>
             </label>
             <div className="relative">
-              <span className="absolute left-3.5 top-3 text-slate-400 font-bold text-base">Rp</span>
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">
+                Rp
+              </span>
               <input
                 type="number"
                 inputMode="numeric"
                 required
-                placeholder="0"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded-2xl pl-12 pr-4 py-2.5 text-lg font-extrabold text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500"
+                placeholder="0"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-11 pr-4 py-2.5 text-base font-extrabold text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
               />
-            </div>
-            {/* Quick buttons */}
-            <div className="flex gap-2 mt-2">
-              <button
-                type="button"
-                onClick={() => setAmount(String(sourceBalance))}
-                className="px-2.5 py-1 text-xs font-bold bg-blue-500/20 text-blue-300 rounded-lg border border-blue-500/30"
-              >
-                Semua Saldo
-              </button>
-              <button
-                type="button"
-                onClick={() => setAmount('50000')}
-                className="px-2.5 py-1 text-xs font-semibold bg-slate-800 text-slate-300 rounded-lg border border-slate-700"
-              >
-                Rp 50.000
-              </button>
-              <button
-                type="button"
-                onClick={() => setAmount('100000')}
-                className="px-2.5 py-1 text-xs font-semibold bg-slate-800 text-slate-300 rounded-lg border border-slate-700"
-              >
-                Rp 100.000
-              </button>
             </div>
           </div>
 
           {/* Keterangan */}
           <div>
-            <label className="block text-xs font-bold text-slate-300 mb-1">
-              Keterangan
+            <label className="block text-xs font-bold text-slate-700 mb-1">
+              Keterangan Transfer
             </label>
             <input
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
+              placeholder="Contoh: Tarik saldo QRIS ke Kasir"
+              className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
             />
           </div>
 
           {/* Waktu */}
           <div>
-            <label className="block text-xs font-bold text-slate-300 mb-1">
+            <label className="block text-xs font-bold text-slate-700 mb-1">
               Waktu Transfer
             </label>
             <input
               type="datetime-local"
               value={transferTime}
               onChange={(e) => setTransferTime(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
+              className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
             />
           </div>
 
-          {/* Submit */}
+          {/* Tombol Simpan */}
           <div className="pt-2">
             <button
               type="submit"
-              className="w-full py-3 px-4 rounded-2xl font-extrabold text-sm text-white bg-gradient-to-r from-blue-600 to-indigo-600 shadow-xl shadow-blue-500/25 flex items-center justify-center space-x-2 active:scale-98 transition-all"
+              className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 font-bold text-xs uppercase tracking-wider text-white shadow-md active:scale-98 transition-all"
             >
-              <Check className="w-4 h-4" />
-              <span>Konfirmasi Pindah Saldo</span>
+              Proses Pindah Saldo
             </button>
           </div>
         </form>

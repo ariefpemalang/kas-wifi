@@ -1,6 +1,17 @@
 // src/components/WalletCarousel.jsx
 import React, { useState } from 'react';
-import { Wallet, Smartphone, QrCode, Banknote, Eye, EyeOff, TrendingUp, TrendingDown } from 'lucide-react';
+import {
+  Wallet,
+  Smartphone,
+  QrCode,
+  Banknote,
+  Eye,
+  EyeOff,
+  TrendingUp,
+  TrendingDown,
+  CalendarCheck,
+  CheckCircle2
+} from 'lucide-react';
 import { formatRupiah } from '../utils/format';
 
 export function WalletCarousel({ summary, onSelectWallet, activeWalletFilter }) {
@@ -15,150 +26,158 @@ export function WalletCarousel({ summary, onSelectWallet, activeWalletFilter }) 
   const totalBalance = summary?.total_balance || 0;
   const todayIncome = summary?.today?.income || 0;
   const todayExpense = summary?.today?.expense || 0;
+  const monthIncome = summary?.month?.income || 0;
+  const monthExpense = summary?.month?.expense || 0;
 
-  const getWalletTheme = (name) => {
+  const getWalletConfig = (name) => {
     switch (name?.toUpperCase()) {
       case 'TUNAI':
         return {
           icon: Banknote,
-          bg: 'from-emerald-700 via-emerald-800 to-teal-950',
-          border: 'border-emerald-500/30',
-          accent: 'text-emerald-400',
-          badge: 'bg-emerald-500/20 text-emerald-300',
+          bgGradient: 'bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800',
+          badgeBg: 'bg-emerald-950/40 text-emerald-100',
           label: 'Kas Fisik / Laci'
         };
       case 'DANA':
         return {
           icon: Smartphone,
-          bg: 'from-sky-700 via-blue-800 to-slate-950',
-          border: 'border-sky-500/30',
-          accent: 'text-sky-400',
-          badge: 'bg-sky-500/20 text-sky-300',
+          bgGradient: 'bg-gradient-to-br from-sky-500 via-blue-600 to-blue-700',
+          badgeBg: 'bg-blue-950/40 text-sky-100',
           label: 'E-Wallet DANA'
         };
       case 'QRIN':
         return {
           icon: QrCode,
-          bg: 'from-orange-700 via-amber-800 to-stone-950',
-          border: 'border-orange-500/30',
-          accent: 'text-orange-400',
-          badge: 'bg-orange-500/20 text-orange-300',
+          bgGradient: 'bg-gradient-to-br from-orange-500 via-amber-600 to-orange-700',
+          badgeBg: 'bg-orange-950/40 text-orange-100',
           label: 'QRIS Merchant'
         };
       default:
         return {
           icon: Wallet,
-          bg: 'from-slate-700 via-slate-800 to-slate-950',
-          border: 'border-slate-500/30',
-          accent: 'text-slate-300',
-          badge: 'bg-slate-500/20 text-slate-300',
+          bgGradient: 'bg-gradient-to-br from-slate-700 to-slate-800',
+          badgeBg: 'bg-slate-900/40 text-slate-100',
           label: 'Dompet Kas'
         };
     }
   };
 
   return (
-    <div className="space-y-3">
-      {/* Kartu Utama: Total Saldo */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950/80 to-slate-900 border border-indigo-500/20 p-4 shadow-xl">
-        <div className="absolute top-0 right-0 -mr-6 -mt-6 w-32 h-32 rounded-full bg-blue-500/10 blur-2xl pointer-events-none"></div>
-
-        <div className="flex items-center justify-between mb-2">
+    <div className="space-y-3.5">
+      {/* 1. KARTU TOTAL SALDO KASIR */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-blue-950 text-white p-4 shadow-md border border-slate-700/50">
+        <div className="flex items-center justify-between mb-1.5">
           <div className="flex items-center space-x-2">
-            <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-              Total Kasir Bersih
+            <span className="text-[11px] font-semibold text-slate-300 uppercase tracking-wider">
+              TOTAL KAS SEMUA WALLET
             </span>
             <button
               onClick={() => setShowBalance(!showBalance)}
               className="text-slate-400 hover:text-white transition-colors p-1"
-              aria-label="Sembunyikan Saldo"
+              aria-label="Toggle Saldo"
             >
-              {showBalance ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              {showBalance ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
             </button>
           </div>
-          <span className="text-[11px] font-semibold bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-500/30">
-            3 Dompet Aktif
+          <span className="text-[10px] font-bold bg-white/15 text-blue-200 px-2.5 py-0.5 rounded-full border border-white/10">
+            3 Dompet Kasir
           </span>
         </div>
 
-        <div className="mb-3">
-          <h2 className="text-2xl font-extrabold text-white tracking-tight">
+        <div className="my-1">
+          <h2 className="text-3xl font-extrabold text-white tracking-tight">
             {showBalance ? formatRupiah(totalBalance) : 'Rp ••••••••'}
           </h2>
-        </div>
-
-        {/* Mini stats hari ini */}
-        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/80">
-          <div className="flex items-center space-x-2">
-            <div className="w-7 h-7 rounded-lg bg-emerald-500/15 flex items-center justify-center text-emerald-400">
-              <TrendingUp className="w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-[10px] text-slate-400">Masuk Hari Ini</p>
-              <p className="text-xs font-bold text-emerald-400">
-                {showBalance ? formatRupiah(todayIncome) : '••••••'}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <div className="w-7 h-7 rounded-lg bg-rose-500/15 flex items-center justify-center text-rose-400">
-              <TrendingDown className="w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-[10px] text-slate-400">Keluar Hari Ini</p>
-              <p className="text-xs font-bold text-rose-400">
-                {showBalance ? formatRupiah(todayExpense) : '••••••'}
-              </p>
-            </div>
-          </div>
+          <p className="text-[11px] text-slate-400 mt-0.5">
+            Akumulasi seluruh kas fisik, DANA, dan QRIS
+          </p>
         </div>
       </div>
 
-      {/* Baris Dompet: TUNAI, DANA, QRIN (Scroll Horizontal) */}
+      {/* 2. DAFTAR KARTU 3 DOMPET (TUNAI, DANA, QRIN) */}
       <div>
-        <div className="flex items-center justify-between mb-1.5 px-0.5">
-          <span className="text-xs font-bold text-slate-300">Rincian Per Dompet</span>
+        <div className="flex items-center justify-between mb-2 px-1">
+          <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+            Rincian Per Dompet
+          </span>
           {activeWalletFilter && (
             <button
               onClick={() => onSelectWallet(null)}
-              className="text-[11px] text-cyan-400 hover:underline"
+              className="text-[11px] font-semibold text-blue-600 hover:underline"
             >
-              Reset Filter
+              Tampilkan Semua
             </button>
           )}
         </div>
 
-        <div className="flex space-x-2.5 overflow-x-auto pb-1.5 pt-0.5 no-scrollbar scroll-smooth">
-          {wallets.map((wallet) => {
-            const theme = getWalletTheme(wallet.name);
-            const Icon = theme.icon;
-            const isSelected = activeWalletFilter === wallet.id;
+        <div className="grid grid-cols-3 gap-2.5">
+          {wallets.map((w) => {
+            const cfg = getWalletConfig(w.name);
+            const Icon = cfg.icon;
+            const isSelected = activeWalletFilter === w.id;
+            const balance = Number(w.current_balance || 0);
 
             return (
               <button
-                key={wallet.id}
-                onClick={() => onSelectWallet(isSelected ? null : wallet.id)}
-                className={`flex-none w-[150px] text-left p-3 rounded-xl bg-gradient-to-br ${theme.bg} border transition-all ${
-                  isSelected ? 'border-cyan-400 ring-2 ring-cyan-400/40 scale-[1.02]' : theme.border
-                } shadow-md`}
+                key={w.id}
+                onClick={() => onSelectWallet(isSelected ? null : w.id)}
+                className={`relative overflow-hidden rounded-xl p-3 text-left transition-all ${cfg.bgGradient} text-white shadow-sm hover:shadow-md active:scale-98 ${
+                  isSelected ? 'ring-3 ring-blue-500 ring-offset-2 scale-102 shadow-lg' : ''
+                }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <div className="w-7 h-7 rounded-lg bg-black/20 flex items-center justify-center text-white">
-                    <Icon className="w-4 h-4" />
+                  <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center">
+                    <Icon className="w-4 h-4 text-white" />
                   </div>
-                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${theme.badge}`}>
-                    {wallet.name}
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${cfg.badgeBg}`}>
+                    {w.name}
                   </span>
                 </div>
 
-                <p className="text-[10px] text-slate-300 font-medium truncate">{theme.label}</p>
-                <p className="text-sm font-extrabold text-white tracking-tight mt-0.5">
-                  {showBalance ? formatRupiah(wallet.current_balance) : '••••••'}
-                </p>
+                <div className="text-[10px] text-white/80 font-medium truncate">
+                  {cfg.label}
+                </div>
+                <div className="text-sm font-bold text-white tracking-tight mt-0.5 truncate">
+                  {showBalance ? formatRupiah(balance) : '••••••'}
+                </div>
               </button>
             );
           })}
+        </div>
+      </div>
+
+      {/* 3. RINGKASAN STATISTIK HARI INI & BULAN INI (Sama seperti Web Kas WiFi) */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+        {/* Pemasukan Hari Ini */}
+        <div className="bg-white rounded-xl p-2.5 border-l-4 border-emerald-500 shadow-sm border border-slate-100">
+          <span className="text-[10px] font-semibold text-slate-500 block">Pemasukan Hari Ini</span>
+          <span className="text-xs font-bold text-emerald-600 block mt-0.5">
+            {showBalance ? formatRupiah(todayIncome) : '••••••'}
+          </span>
+        </div>
+
+        {/* Pengeluaran Hari Ini */}
+        <div className="bg-white rounded-xl p-2.5 border-l-4 border-rose-500 shadow-sm border border-slate-100">
+          <span className="text-[10px] font-semibold text-slate-500 block">Pengeluaran Hari Ini</span>
+          <span className="text-xs font-bold text-rose-600 block mt-0.5">
+            {showBalance ? formatRupiah(todayExpense) : '••••••'}
+          </span>
+        </div>
+
+        {/* Pemasukan Bulan Ini */}
+        <div className="bg-white rounded-xl p-2.5 border-l-4 border-blue-500 shadow-sm border border-slate-100">
+          <span className="text-[10px] font-semibold text-slate-500 block">Pemasukan Bulan Ini</span>
+          <span className="text-xs font-bold text-blue-600 block mt-0.5">
+            {showBalance ? formatRupiah(monthIncome) : '••••••'}
+          </span>
+        </div>
+
+        {/* Pengeluaran Bulan Ini */}
+        <div className="bg-white rounded-xl p-2.5 border-l-4 border-amber-500 shadow-sm border border-slate-100">
+          <span className="text-[10px] font-semibold text-slate-500 block">Pengeluaran Bulan Ini</span>
+          <span className="text-xs font-bold text-amber-600 block mt-0.5">
+            {showBalance ? formatRupiah(monthExpense) : '••••••'}
+          </span>
         </div>
       </div>
     </div>

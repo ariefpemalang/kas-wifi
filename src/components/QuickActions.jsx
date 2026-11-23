@@ -9,8 +9,9 @@ export function QuickActions({ onOpenAddModal, onOpenTransferModal, onOpenReceip
       title: 'Pemasukan',
       subtitle: '+ Voucher / Member',
       icon: PlusCircle,
-      gradient: 'from-emerald-500 to-teal-600',
-      shadow: 'shadow-emerald-500/20',
+      iconColor: 'text-emerald-600',
+      iconBg: 'bg-emerald-50 border-emerald-200/60',
+      hoverBorder: 'hover:border-emerald-300',
       onClick: () => onOpenAddModal('pemasukan')
     },
     {
@@ -18,8 +19,9 @@ export function QuickActions({ onOpenAddModal, onOpenTransferModal, onOpenReceip
       title: 'Pengeluaran',
       subtitle: '- Biaya & PLN',
       icon: MinusCircle,
-      gradient: 'from-rose-500 to-red-600',
-      shadow: 'shadow-rose-500/20',
+      iconColor: 'text-rose-600',
+      iconBg: 'bg-rose-50 border-rose-200/60',
+      hoverBorder: 'hover:border-rose-300',
       onClick: () => onOpenAddModal('pengeluaran')
     },
     {
@@ -27,8 +29,9 @@ export function QuickActions({ onOpenAddModal, onOpenTransferModal, onOpenReceip
       title: 'Transfer',
       subtitle: 'Pindah Dompet',
       icon: ArrowLeftRight,
-      gradient: 'from-blue-500 to-indigo-600',
-      shadow: 'shadow-blue-500/20',
+      iconColor: 'text-blue-600',
+      iconBg: 'bg-blue-50 border-blue-200/60',
+      hoverBorder: 'hover:border-blue-300',
       onClick: onOpenTransferModal
     },
     {
@@ -36,8 +39,9 @@ export function QuickActions({ onOpenAddModal, onOpenTransferModal, onOpenReceip
       title: 'Nota / Struk',
       subtitle: 'Cetak & WA',
       icon: ReceiptText,
-      gradient: 'from-amber-500 to-orange-600',
-      shadow: 'shadow-amber-500/20',
+      iconColor: 'text-amber-600',
+      iconBg: 'bg-amber-50 border-amber-200/60',
+      hoverBorder: 'hover:border-amber-300',
       onClick: onOpenReceiptModal
     }
   ];
@@ -50,15 +54,15 @@ export function QuickActions({ onOpenAddModal, onOpenTransferModal, onOpenReceip
           <button
             key={act.id}
             onClick={act.onClick}
-            className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 active:scale-95 transition-all text-center group"
+            className={`flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white border border-slate-200/80 shadow-sm hover:shadow-md active:scale-95 transition-all text-center group ${act.hoverBorder}`}
           >
             <div
-              className={`w-11 h-11 rounded-xl bg-gradient-to-tr ${act.gradient} flex items-center justify-center text-white mb-1.5 shadow-lg ${act.shadow} group-hover:scale-105 transition-transform`}
+              className={`w-11 h-11 rounded-xl ${act.iconBg} border flex items-center justify-center ${act.iconColor} mb-1.5 shadow-xs group-hover:scale-105 transition-transform`}
             >
               <Icon className="w-5 h-5" />
             </div>
-            <span className="text-xs font-bold text-slate-200">{act.title}</span>
-            <span className="text-[9px] text-slate-400 truncate w-full">{act.subtitle}</span>
+            <span className="text-xs font-bold text-slate-800">{act.title}</span>
+            <span className="text-[9px] text-slate-500 truncate w-full mt-0.5">{act.subtitle}</span>
           </button>
         );
       })}

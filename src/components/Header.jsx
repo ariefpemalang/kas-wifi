@@ -1,9 +1,9 @@
 // src/components/Header.jsx
 import React, { useState, useEffect } from 'react';
-import { Wifi, RefreshCw, Smartphone, ShieldCheck, Settings, Eye, EyeOff } from 'lucide-react';
+import { Wifi, RefreshCw, Settings, ShieldCheck, WifiOff } from 'lucide-react';
 import { Storage } from '../services/storage';
 
-export function Header({ mode, setMode, onOpenSettings, isSyncing, onSync, pendingCount }) {
+export function Header({ mode, setMode, onOpenSettings, isSyncing, onSync, pendingCount, onRefresh }) {
   const [currentTime, setCurrentTime] = useState('');
 
   useEffect(() => {
@@ -24,50 +24,68 @@ export function Header({ mode, setMode, onOpenSettings, isSyncing, onSync, pendi
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 bg-slate-900/90 backdrop-blur-md border-b border-slate-800/80 px-4 py-3">
+    <header className="sticky top-0 z-30 bg-gradient-to-r from-slate-950 via-blue-950 to-blue-800 text-white shadow-lg border-b border-blue-900/50 px-4 py-3">
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2.5">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20 text-white font-bold">
-            <Wifi className="w-5 h-5 text-white animate-pulse" />
+        {/* Brand & Jam */}
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-xl bg-white text-blue-700 flex items-center justify-center shadow-md font-bold ring-2 ring-blue-400/30">
+            <Wifi className="w-6 h-6 text-amber-500 animate-pulse" />
           </div>
           <div>
             <div className="flex items-center space-x-1.5">
-              <h1 className="font-bold text-base tracking-tight text-white">KAS WIFI</h1>
-              <span className="text-[10px] font-semibold bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded uppercase tracking-wider">
-                Mobile
+              <h1 className="font-extrabold text-lg tracking-tight text-white">
+                KAS <span className="text-amber-400">WIFI</span>
+              </h1>
+              <span className="text-[10px] font-bold bg-amber-400 text-slate-950 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                MOBILE
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 font-medium">{currentTime}</p>
+            <p className="text-[11px] text-blue-200/90 font-medium">{currentTime}</p>
           </div>
         </div>
 
+        {/* Status Pill & Aksi */}
         <div className="flex items-center space-x-2">
+          {/* Tombol Antrean Sync Offline */}
           {pendingCount > 0 && (
             <button
               onClick={onSync}
               disabled={isSyncing}
-              className="flex items-center space-x-1 text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-1 rounded-lg animate-pulse"
-              title="Ada transaksi offline, tap untuk sync"
+              className="flex items-center space-x-1 text-xs bg-amber-500 text-slate-950 font-bold px-2 py-1 rounded-lg shadow-sm animate-pulse"
+              title="Ada transaksi belum tersinkron, tap untuk sinkronkan"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-              <span className="font-semibold text-[11px]">{pendingCount}</span>
+              <span className="text-[11px]">{pendingCount} Pending</span>
             </button>
           )}
 
+          {/* Tombol Refresh Data */}
           <button
-            onClick={() => onOpenSettings()}
-            className="flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-all bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/60"
+            onClick={onRefresh}
+            disabled={isSyncing}
+            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors border border-white/10"
+            title="Muat ulang data dari server"
           >
-            <span className={`w-2 h-2 rounded-full ${mode === 'online' ? 'bg-emerald-400' : 'bg-amber-400'}`}></span>
-            <span className="text-[11px] capitalize">{mode}</span>
+            <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
           </button>
 
+          {/* Status Koneksi */}
           <button
             onClick={onOpenSettings}
-            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors border border-slate-700/60"
+            className="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all bg-white/10 hover:bg-white/20 border border-white/15 text-white"
+            title="Klik untuk membuka pengaturan server"
+          >
+            <span className={`w-2 h-2 rounded-full ${mode === 'online' ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></span>
+            <span className="text-[11px]">{mode === 'online' ? 'Online' : 'Offline'}</span>
+          </button>
+
+          {/* Pengaturan */}
+          <button
+            onClick={onOpenSettings}
+            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors border border-white/15"
             aria-label="Pengaturan"
           >
-            <Settings className="w-4 h-4 text-slate-300" />
+            <Settings className="w-4 h-4 text-white" />
           </button>
         </div>
       </div>

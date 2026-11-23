@@ -2,32 +2,37 @@
 
 @layer base {
   body {
-    background-color: #090d16;
-    color: #f8fafc;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    background-color: #f8fafc;
+    color: #1e293b;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
-.glass-card {
-  background: rgba(30, 41, 59, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+/* Custom Card & Utility Styles */
+.card-clean {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-.glass-nav {
-  background: rgba(15, 23, 42, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+.card-clean-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-clean-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 }
 
 /* Receipt thermal paper styling */
 .receipt-paper {
-  background-color: #fff;
+  background-color: #ffffff;
   color: #111827;
   font-family: 'Courier New', Courier, monospace;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
   position: relative;
 }
 

@@ -16,7 +16,7 @@ import { Api } from './services/api';
 
 export function App() {
   const [activeTab, setActiveTab] = useState('dashboard'); // dashboard, transactions, reports, categories
-  const [mode, setMode] = useState('offline');
+  const [mode, setMode] = useState('online');
   const [summary, setSummary] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [transfers, setTransfers] = useState([]);
@@ -37,30 +37,41 @@ export function App() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
 
-  // Load initial data
+  // Load initial data dari server / local cache
   const loadData = useCallback(async () => {
-    Storage.seedSampleDataIfEmpty();
     const currentMode = Storage.getMode();
     setMode(currentMode);
 
-    const cats = Storage.getCategories();
-    setCategories(cats);
-
-    const w = Storage.getWallets();
-    setWallets(w);
-
-    const res = await Api.getDashboardSummary();
-    if (res.success && res.data) {
-      setSummary(res.data);
-      setWallets(res.data.wallets || []);
-    }
-
+    // Muat data lokal terlebih dahulu untuk kecepatan render
+    setCategories(Storage.getCategories());
+    setWallets(Storage.getWallets());
     setTransactions(Storage.getTransactions());
     setTransfers(Storage.getTransfers());
 
     const queue = Storage.getOfflineQueue();
     const count = (queue.transactions?.length || 0) + (queue.transfers?.length || 0);
     setPendingCount(count);
+
+    // Ambil data terbaru dari server
+    setIsSyncing(true);
+    try {
+      const res = await Api.getDashboardSummary();
+      if (res.success && res.data) {
+        setSummary(res.data);
+        if (res.data.wallets) setWallets(res.data.wallets);
+        if (res.data.categories) setCategories(res.data.categories);
+      }
+
+      // Ambil transaksi lengkap
+      const txRes = await Api.getTransactions();
+      if (txRes.success && txRes.data) {
+        setTransactions(txRes.data);
+      }
+    } catch (e) {
+      console.warn('Gagal memuat data server:', e);
+    } finally {
+      setIsSyncing(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -69,26 +80,31 @@ export function App() {
 
   // Handle Save Transaction
   const handleSaveTransaction = async (txData) => {
-    await Api.createTransaction(txData);
+    setIsSyncing(true);
+    const res = await Api.createTransaction(txData);
+    setIsSyncing(false);
     await loadData();
-    // Open receipt modal for this new transaction
-    const latestTx = Storage.getTransactions()[0];
-    if (latestTx) {
-      setActiveReceiptTx(latestTx);
+
+    if (res.data) {
+      setActiveReceiptTx(res.data);
       setIsReceiptModalOpen(true);
     }
   };
 
   // Handle Save Transfer
   const handleSaveTransfer = async (trData) => {
+    setIsSyncing(true);
     await Api.createTransfer(trData);
+    setIsSyncing(false);
     await loadData();
   };
 
   // Handle Delete Transaction
-  const handleDeleteTransaction = (id) => {
+  const handleDeleteTransaction = async (id, isTransfer) => {
     if (confirm('Apakah Anda yakin ingin menghapus transaksi ini?')) {
-      Storage.deleteTransaction(id);
+      setIsSyncing(true);
+      await Api.deleteTransaction(id);
+      setIsSyncing(false);
       loadData();
     }
   };
@@ -120,8 +136,8 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-white">
-      {/* Header */}
+    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+      {/* Header Bersih Khas Web KAS WIFI */}
       <Header
         mode={mode}
         setMode={setMode}
@@ -129,14 +145,15 @@ export function App() {
         isSyncing={isSyncing}
         onSync={handleManualSync}
         pendingCount={pendingCount}
+        onRefresh={loadData}
       />
 
       {/* Main Content Area (Mobile Container) */}
-      <main className="flex-1 max-w-md w-full mx-auto px-4 py-3 pb-24 space-y-4">
-        {/* Render based on active tab */}
+      <main className="flex-1 max-w-md w-full mx-auto px-4 py-3.5 pb-24 space-y-4">
+        {/* Render Berdasarkan Tab Aktif */}
         {activeTab === 'dashboard' && (
           <>
-            {/* Wallet Carousel & Total Balances */}
+            {/* Kartu Dompet & Ringkasan */}
             <WalletCarousel
               summary={summary}
               wallets={wallets}
@@ -144,7 +161,7 @@ export function App() {
               onSelectWallet={setSelectedWalletId}
             />
 
-            {/* Quick Actions (Kasir Bar) */}
+            {/* Quick Actions (Tombol Kasir Utama) */}
             <QuickActions
               onOpenAddModal={(type) => {
                 setAddModalType(type);
@@ -154,7 +171,7 @@ export function App() {
               onOpenReceiptModal={handleOpenLatestReceipt}
             />
 
-            {/* Transactions List Preview */}
+            {/* Riwayat Transaksi */}
             <TransactionList
               transactions={transactions}
               transfers={transfers}
@@ -185,31 +202,33 @@ export function App() {
 
         {activeTab === 'categories' && (
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-base font-extrabold text-white">Kategori Transaksi Kas</h2>
+            <div className="flex items-center justify-between px-1">
+              <div>
+                <h2 className="text-base font-extrabold text-slate-800">Kategori Kas WiFi</h2>
+                <p className="text-[11px] text-slate-500">
+                  Kategori voucher, tagihan, bandwidth & operasional kasir
+                </p>
+              </div>
               <button
                 onClick={() => setIsCategoriesModalOpen(true)}
-                className="px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold shadow-md shadow-cyan-600/30"
+                className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-colors"
               >
-                + Tambah Kategori
+                + Kelola
               </button>
             </div>
-            <p className="text-xs text-slate-400">
-              Kategori voucher WiFi, operasional, bandwidth, dan kebutuhan kasir lainnya.
-            </p>
 
             <div className="grid grid-cols-1 gap-2 pt-1">
               {categories.map((c) => (
                 <div
                   key={c.id}
-                  className="p-3 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between"
+                  className="p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs flex items-center justify-between"
                 >
-                  <span className="text-xs font-bold text-slate-200">{c.name}</span>
+                  <span className="text-xs font-bold text-slate-800">{c.name}</span>
                   <span
                     className={`text-[10px] font-bold px-2 py-0.5 rounded-lg uppercase ${
                       c.type === 'pemasukan'
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                        : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                        : 'bg-rose-100 text-rose-800 border border-rose-200'
                     }`}
                   >
                     {c.type}
@@ -226,7 +245,7 @@ export function App() {
         activeTab={activeTab}
         onTabChange={(tab) => {
           if (tab === 'categories') {
-            setIsCategoriesModalOpen(true);
+            setActiveTab('categories');
           } else {
             setActiveTab(tab);
           }
@@ -274,4 +293,5 @@ export function App() {
     </div>
   );
 }
+
 export default App;

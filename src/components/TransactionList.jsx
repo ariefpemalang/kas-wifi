@@ -5,12 +5,11 @@ import {
   ArrowUpRight,
   ArrowLeftRight,
   Search,
-  Filter,
   Receipt,
   Trash2,
   Calendar,
-  CloudOff,
-  CheckCircle2
+  XCircle,
+  Tag
 } from 'lucide-react';
 import { formatRupiah, formatTanggalIndo, formatJamIndo, getHariIndo } from '../utils/format';
 
@@ -91,218 +90,212 @@ export function TransactionList({
   const getWalletBadgeClass = (name) => {
     switch (name?.toUpperCase()) {
       case 'TUNAI':
-        return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+        return 'bg-emerald-100 text-emerald-800 border-emerald-200';
       case 'DANA':
-        return 'bg-sky-500/20 text-sky-300 border-sky-500/30';
+        return 'bg-sky-100 text-sky-800 border-sky-200';
       case 'QRIN':
-        return 'bg-orange-500/20 text-orange-300 border-orange-500/30';
+        return 'bg-orange-100 text-orange-800 border-orange-200';
       default:
-        return 'bg-slate-700 text-slate-300 border-slate-600';
+        return 'bg-slate-100 text-slate-700 border-slate-200';
     }
   };
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h3 className="font-bold text-sm text-slate-200">Riwayat Transaksi</h3>
-        <span className="text-[11px] text-slate-400 font-medium">
+      {/* 1. Header Riwayat */}
+      <div className="flex items-center justify-between px-1">
+        <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+          Riwayat Transaksi
+        </h3>
+        <span className="text-[11px] font-semibold text-slate-500 bg-white px-2 py-0.5 rounded-full border border-slate-200 shadow-2xs">
           {combinedList.length} Transaksi
         </span>
       </div>
 
-      {/* Search & Date Filter Bar */}
-      <div className="flex space-x-2">
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-          <input
-            type="text"
-            placeholder="Cari voucher, keterangan..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-800/90 border border-slate-700/70 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
-          />
-        </div>
-
-        <div className="relative">
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="bg-slate-800/90 border border-slate-700/70 rounded-xl px-2.5 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500"
-          />
-        </div>
-      </div>
-
-      {/* Tabs Filter Tipe */}
-      <div className="flex space-x-1.5 p-1 bg-slate-900/80 rounded-xl border border-slate-800">
-        {[
-          { id: 'all', label: 'Semua' },
-          { id: 'pemasukan', label: 'Masuk' },
-          { id: 'pengeluaran', label: 'Keluar' },
-          { id: 'transfer', label: 'Transfer' }
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setFilterType(tab.id)}
-            className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-              filterType === tab.id
-                ? 'bg-slate-800 text-white shadow-sm border border-slate-700/80'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* List items */}
-      <div className="space-y-2">
-        {combinedList.length === 0 ? (
-          <div className="text-center py-8 bg-slate-800/30 rounded-2xl border border-dashed border-slate-700/60 p-6">
-            <Filter className="w-8 h-8 text-slate-500 mx-auto mb-2 opacity-50" />
-            <p className="text-xs font-medium text-slate-400">Belum ada transaksi yang sesuai</p>
-            <p className="text-[11px] text-slate-500 mt-0.5">
-              Gunakan tombol di atas untuk mencatat transaksi kasir
-            </p>
+      {/* 2. Filter & Pencarian */}
+      <div className="bg-white rounded-2xl p-2.5 shadow-sm border border-slate-200/80 space-y-2">
+        <div className="flex items-center space-x-2">
+          {/* Kolom Cari */}
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Cari voucher, keterangan..."
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-8 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              >
+                <XCircle className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
-        ) : (
-          combinedList.map((item) => {
-            const timeStr = item.transaction_time || item.transfer_time;
-            const hari = getHariIndo(timeStr);
-            const tgl = formatTanggalIndo(timeStr);
-            const jam = formatJamIndo(timeStr);
 
-            if (item.isTransfer) {
-              return (
-                <div
-                  key={`tr-${item.id}`}
-                  className="p-3 rounded-2xl bg-slate-800/60 hover:bg-slate-800/90 border border-slate-700/50 transition-all flex items-center justify-between"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-9 h-9 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center flex-shrink-0">
-                      <ArrowLeftRight className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <div className="flex items-center space-x-1.5 mb-0.5">
-                        <span className="text-xs font-bold text-white">Transfer Antar Dompet</span>
-                      </div>
-                      <p className="text-[11px] text-slate-300 font-medium">
-                        {item.from_wallet_name} → {item.to_wallet_name}
-                      </p>
-                      <p className="text-[10px] text-slate-400">
-                        {hari}, {tgl} • {jam}
-                      </p>
-                    </div>
-                  </div>
+          {/* Filter Tanggal */}
+          <div className="relative w-36">
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+            />
+            {selectedDate && (
+              <button
+                onClick={() => setSelectedDate('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 bg-slate-50"
+                title="Hapus filter tanggal"
+              >
+                <XCircle className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
 
-                  <div className="text-right">
-                    <p className="text-xs font-extrabold text-blue-400 tracking-tight">
-                      {formatRupiah(item.amount)}
-                    </p>
-                    <span className="inline-block text-[9px] bg-blue-500/20 text-blue-300 px-1.5 py-0.5 rounded border border-blue-500/30 mt-1">
-                      Mutasi
-                    </span>
-                  </div>
-                </div>
-              );
-            }
+        {/* Tab Filter Tipe */}
+        <div className="grid grid-cols-4 gap-1 p-0.5 bg-slate-100 rounded-xl">
+          {[
+            { id: 'all', label: 'Semua' },
+            { id: 'pemasukan', label: 'Masuk' },
+            { id: 'pengeluaran', label: 'Keluar' },
+            { id: 'transfer', label: 'Transfer' }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setFilterType(tab.id)}
+              className={`py-1 text-xs font-semibold rounded-lg transition-all ${
+                filterType === tab.id
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
+      {/* 3. Daftar Baris Transaksi */}
+      {combinedList.length === 0 ? (
+        <div className="bg-white rounded-2xl p-8 text-center border border-slate-200/80 shadow-sm">
+          <Tag className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+          <p className="text-xs font-bold text-slate-600">Belum ada catatan transaksi</p>
+          <p className="text-[11px] text-slate-400 mt-0.5">
+            Gunakan tombol Pemasukan atau Pengeluaran untuk mencatat transaksi baru.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {combinedList.map((item) => {
+            const isTransfer = item.isTransfer;
             const isIncome = item.type === 'pemasukan';
+            const timeStr = item.transaction_time || item.transfer_time || '';
 
             return (
               <div
-                key={`tx-${item.id}`}
-                className="p-3 rounded-2xl bg-slate-800/60 hover:bg-slate-800/90 border border-slate-700/50 transition-all flex items-center justify-between group"
+                key={isTransfer ? `tr-${item.id}` : `tx-${item.id}`}
+                className="bg-white rounded-xl p-3 border border-slate-200/80 shadow-xs hover:shadow-sm transition-all flex items-center justify-between"
               >
-                <div className="flex items-center space-x-3">
+                {/* Bagian Kiri: Ikon & Detail */}
+                <div className="flex items-center space-x-3 flex-1 min-w-0 pr-2">
+                  {/* Ikon Tipe */}
                   <div
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                      isIncome
-                        ? 'bg-emerald-500/15 text-emerald-400'
-                        : 'bg-rose-500/15 text-rose-400'
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                      isTransfer
+                        ? 'bg-blue-50 text-blue-600 border border-blue-200'
+                        : isIncome
+                        ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+                        : 'bg-rose-50 text-rose-600 border border-rose-200'
                     }`}
                   >
-                    {isIncome ? (
+                    {isTransfer ? (
+                      <ArrowLeftRight className="w-4 h-4" />
+                    ) : isIncome ? (
                       <ArrowDownLeft className="w-4 h-4" />
                     ) : (
                       <ArrowUpRight className="w-4 h-4" />
                     )}
                   </div>
 
-                  <div>
-                    <div className="flex items-center space-x-1.5 mb-0.5">
-                      <span className="text-xs font-bold text-white">
-                        {item.category_name || (isIncome ? 'Pemasukan' : 'Pengeluaran')}
-                      </span>
-                      <span
-                        className={`text-[9px] font-bold px-1.5 py-0.2 rounded border ${getWalletBadgeClass(
-                          item.wallet_name
-                        )}`}
-                      >
-                        {item.wallet_name}
-                      </span>
+                  {/* Keterangan */}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center space-x-2">
+                      <h4 className="text-xs font-bold text-slate-800 truncate">
+                        {isTransfer
+                          ? `Transfer: ${item.from_wallet_name} → ${item.to_wallet_name}`
+                          : item.category_name || (isIncome ? 'Pemasukan' : 'Pengeluaran')}
+                      </h4>
+                      {!isTransfer && item.wallet_name && (
+                        <span
+                          className={`text-[9px] font-bold px-1.5 py-0.2 rounded border ${getWalletBadgeClass(
+                            item.wallet_name
+                          )}`}
+                        >
+                          {item.wallet_name}
+                        </span>
+                      )}
                     </div>
 
                     {item.description && (
-                      <p className="text-[11px] text-slate-300 font-normal line-clamp-1">
+                      <p className="text-[11px] text-slate-500 truncate mt-0.5">
                         {item.description}
                       </p>
                     )}
 
-                    <div className="flex items-center space-x-2 mt-0.5">
-                      <span className="text-[10px] text-slate-400">
-                        {hari}, {tgl} • {jam}
-                      </span>
-                      {!item.synced && (
-                        <span className="text-[9px] text-amber-400 flex items-center space-x-0.5">
-                          <CloudOff className="w-2.5 h-2.5" />
-                          <span>Offline</span>
-                        </span>
-                      )}
-                    </div>
+                    <p className="text-[10px] text-slate-400 mt-0.5">
+                      {formatTanggalIndo(timeStr)} • {formatJamIndo(timeStr)} WIB
+                    </p>
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-2">
-                  <div className="text-right">
-                    <p
-                      className={`text-xs font-extrabold tracking-tight ${
-                        isIncome ? 'text-emerald-400' : 'text-rose-400'
-                      }`}
-                    >
-                      {isIncome ? '+' : '-'} {formatRupiah(item.amount)}
-                    </p>
-                    <span
-                      className={`inline-block text-[9px] font-semibold px-1.5 py-0.2 rounded uppercase ${
-                        isIncome ? 'text-emerald-400' : 'text-rose-400'
-                      }`}
-                    >
-                      {item.type}
-                    </span>
+                {/* Bagian Kanan: Nominal & Tombol Aksi */}
+                <div className="text-right shrink-0">
+                  <div
+                    className={`text-xs font-extrabold tracking-tight ${
+                      isTransfer
+                        ? 'text-blue-600'
+                        : isIncome
+                        ? 'text-emerald-600'
+                        : 'text-rose-600'
+                    }`}
+                  >
+                    {isTransfer ? '' : isIncome ? '+ ' : '- '}
+                    {formatRupiah(item.amount)}
+                  </div>
+                  <div className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider">
+                    {isTransfer ? 'TRANSFER' : isIncome ? 'PEMASUKAN' : 'PENGELUARAN'}
                   </div>
 
-                  <div className="flex flex-col space-y-1">
-                    <button
-                      onClick={() => onOpenReceipt(item)}
-                      className="p-1 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-slate-700/60 transition-colors"
-                      title="Cetak / Bagikan Struk Nota"
-                    >
-                      <Receipt className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => onDeleteTransaction(item.id)}
-                      className="p-1 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-slate-700/60 transition-colors"
-                      title="Hapus Transaksi"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                  {/* Aksi Struk & Hapus */}
+                  <div className="flex items-center justify-end space-x-1.5 mt-1.5">
+                    {!isTransfer && onOpenReceipt && (
+                      <button
+                        onClick={() => onOpenReceipt(item)}
+                        className="p-1 rounded text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                        title="Lihat / Cetak Struk"
+                      >
+                        <Receipt className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                    {onDeleteTransaction && (
+                      <button
+                        onClick={() => onDeleteTransaction(item.id, isTransfer)}
+                        className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                        title="Hapus Transaksi"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
             );
-          })
-        )}
-      </div>
+          })}
+        </div>
+      )}
     </div>
   );
 }
