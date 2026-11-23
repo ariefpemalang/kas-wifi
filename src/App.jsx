@@ -13,6 +13,7 @@ import { SettingsModal } from './components/SettingsModal';
 import { BottomNav } from './components/BottomNav';
 import { Storage } from './services/storage';
 import { Api } from './services/api';
+import { SupabaseService, supabase } from './services/supabase';
 
 export function App() {
   const [activeTab, setActiveTab] = useState('dashboard'); // dashboard, transactions, reports, categories
@@ -37,12 +38,9 @@ export function App() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
 
-  // Load initial data dari server / local cache
+  // Load initial data dari Supabase Cloud & Local Cache
   const loadData = useCallback(async () => {
-    const currentMode = Storage.getMode();
-    setMode(currentMode);
-
-    // Muat data lokal terlebih dahulu untuk kecepatan render
+    // 1. Tampilkan data dari memori lokal terlebih dahulu
     setCategories(Storage.getCategories());
     setWallets(Storage.getWallets());
     setTransactions(Storage.getTransactions());
@@ -52,7 +50,7 @@ export function App() {
     const count = (queue.transactions?.length || 0) + (queue.transfers?.length || 0);
     setPendingCount(count);
 
-    // Ambil data terbaru dari server
+    // 2. Tarik data terbaru dari Supabase Cloud
     setIsSyncing(true);
     try {
       const res = await Api.getDashboardSummary();
@@ -60,15 +58,13 @@ export function App() {
         setSummary(res.data);
         if (res.data.wallets) setWallets(res.data.wallets);
         if (res.data.categories) setCategories(res.data.categories);
+        if (res.data.recent_transactions) setTransactions(Storage.getTransactions());
+        if (res.data.recent_transfers) setTransfers(Storage.getTransfers());
       }
-
-      // Ambil transaksi lengkap
-      const txRes = await Api.getTransactions();
-      if (txRes.success && txRes.data) {
-        setTransactions(txRes.data);
-      }
+      setMode('online');
     } catch (e) {
-      console.warn('Gagal memuat data server:', e);
+      console.warn('[App] Mode offline aktif:', e);
+      setMode('offline');
     } finally {
       setIsSyncing(false);
     }
@@ -76,9 +72,30 @@ export function App() {
 
   useEffect(() => {
     loadData();
+
+    // Berlangganan Real-time WebSocket Supabase
+    const channel = SupabaseService.subscribeRealtime(() => {
+      loadData();
+    });
+
+    // Deteksi koneksi internet perangkat
+    const handleOnline = () => {
+      setMode('online');
+      loadData();
+    };
+    const handleOffline = () => setMode('offline');
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      if (channel) supabase.removeChannel(channel);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
   }, [loadData]);
 
-  // Handle Save Transaction
+  // Handle Save Transaction (Otomatis ke Supabase)
   const handleSaveTransaction = async (txData) => {
     setIsSyncing(true);
     const res = await Api.createTransaction(txData);
@@ -91,7 +108,7 @@ export function App() {
     }
   };
 
-  // Handle Save Transfer
+  // Handle Save Transfer (Otomatis ke Supabase)
   const handleSaveTransfer = async (trData) => {
     setIsSyncing(true);
     await Api.createTransfer(trData);
@@ -100,7 +117,7 @@ export function App() {
   };
 
   // Handle Delete Transaction
-  const handleDeleteTransaction = async (id, isTransfer) => {
+  const handleDeleteTransaction = async (id) => {
     if (confirm('Apakah Anda yakin ingin menghapus transaksi ini?')) {
       setIsSyncing(true);
       await Api.deleteTransaction(id);
@@ -153,7 +170,7 @@ export function App() {
         {/* Render Berdasarkan Tab Aktif */}
         {activeTab === 'dashboard' && (
           <>
-            {/* Kartu Dompet & Ringkasan */}
+            {/* Kartu Dompet & Ringkasan Saldo */}
             <WalletCarousel
               summary={summary}
               wallets={wallets}
@@ -279,8 +296,9 @@ export function App() {
         isOpen={isCategoriesModalOpen}
         onClose={() => setIsCategoriesModalOpen(false)}
         categories={categories}
-        onUpdateCategories={(newCats) => {
+        onUpdateCategories={async (newCats) => {
           setCategories(newCats);
+          await SupabaseService.saveAll({ categories: newCats });
           loadData();
         }}
       />

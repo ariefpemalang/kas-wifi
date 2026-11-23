@@ -2,23 +2,19 @@
 import React, { useState, useEffect } from 'react';
 import {
   X,
-  Server,
-  Wifi,
+  Database,
   CloudUpload,
-  Printer,
-  Smartphone,
-  Save,
+  RefreshCw,
   CheckCircle2,
   AlertCircle,
-  HelpCircle,
-  RefreshCw
+  Save,
+  Zap
 } from 'lucide-react';
 import { Storage } from '../services/storage';
 import { Api } from '../services/api';
+import { SupabaseService } from '../services/supabase';
 
 export function SettingsModal({ isOpen, onClose, onSyncComplete }) {
-  const [serverUrl, setServerUrl] = useState('');
-  const [mode, setMode] = useState('online');
   const [shopName, setShopName] = useState('');
   const [shopAddress, setShopAddress] = useState('');
   const [footerNote, setFooterNote] = useState('');
@@ -29,14 +25,13 @@ export function SettingsModal({ isOpen, onClose, onSyncComplete }) {
 
   useEffect(() => {
     if (isOpen) {
-      setServerUrl(Storage.getServerUrl());
-      setMode(Storage.getMode());
       const s = Storage.getSettings();
       setShopName(s.shopName || 'KAS WIFI');
       setShopAddress(s.shopAddress || 'Hotspot Voucher & RT/RW Net Berkah');
       setFooterNote(s.footerNote || 'Terima kasih telah berlangganan!');
       setConnStatus(null);
       setSyncMsg(null);
+      handleTestConnection();
     }
   }, [isOpen]);
 
@@ -45,33 +40,26 @@ export function SettingsModal({ isOpen, onClose, onSyncComplete }) {
   const handleTestConnection = async () => {
     setIsTesting(true);
     setConnStatus(null);
-    const res = await Api.testConnection(serverUrl);
+    const res = await Api.testConnection();
     setIsTesting(false);
     if (res.success) {
-      setConnStatus({ ok: true, message: 'Server Kas WiFi Terhubung & Siap Sinkron!' });
+      setConnStatus({ ok: true, message: '⚡ Terhubung ke Supabase Cloud (PostgreSQL Realtime)!' });
     } else {
       setConnStatus({
         ok: false,
-        message: 'Tidak dapat terhubung: ' + res.error + '. Pastikan server aktif & URL benar.'
+        message: 'Tidak dapat terhubung ke Supabase: ' + res.error
       });
     }
   };
 
-  const handleQuickUrl = (url) => {
-    setServerUrl(url);
-    setConnStatus(null);
-  };
-
   const handleSave = (e) => {
     e.preventDefault();
-    Storage.setServerUrl(serverUrl);
-    Storage.setMode(mode);
     Storage.saveSettings({
       shopName,
       shopAddress,
       footerNote
     });
-    alert('Pengaturan berhasil disimpan!');
+    alert('Pengaturan toko berhasil disimpan!');
     if (onSyncComplete) onSyncComplete();
     onClose();
   };
@@ -93,12 +81,12 @@ export function SettingsModal({ isOpen, onClose, onSyncComplete }) {
         {/* Header */}
         <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
           <div className="flex items-center space-x-2.5">
-            <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
-              <Server className="w-4 h-4" />
+            <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+              <Zap className="w-4 h-4 fill-current" />
             </div>
             <div>
-              <h2 className="font-bold text-sm text-slate-800">Pengaturan & Sinkronisasi Server</h2>
-              <p className="text-[11px] text-slate-500">Hubungkan mobile app ke database MySQL</p>
+              <h2 className="font-bold text-sm text-slate-800">Status Database Supabase Cloud</h2>
+              <p className="text-[11px] text-slate-500">Sinkronisasi Realtime Dua Arah (Multi-Device)</p>
             </div>
           </div>
           <button
@@ -111,58 +99,41 @@ export function SettingsModal({ isOpen, onClose, onSyncComplete }) {
 
         {/* Body */}
         <form onSubmit={handleSave} className="p-5 space-y-4 overflow-y-auto">
-          {/* 1. KONEKSI SERVER */}
-          <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2.5">
-            <span className="text-xs font-bold text-slate-800 flex items-center space-x-1.5">
-              <Wifi className="w-4 h-4 text-blue-600" />
-              <span>Alamat Server Database Kas WiFi</span>
-            </span>
-
-            <div>
-              <input
-                type="text"
-                value={serverUrl}
-                onChange={(e) => setServerUrl(e.target.value)}
-                placeholder="https://kaswifi.my.id"
-                className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-              />
+          {/* 1. KONEKSI SUPABASE */}
+          <div className="p-3.5 bg-emerald-50/50 rounded-2xl border border-emerald-200/80 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-emerald-950 flex items-center space-x-1.5">
+                <Database className="w-4 h-4 text-emerald-600" />
+                <span>Supabase PostgreSQL Cloud</span>
+              </span>
+              <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-200">
+                ⚡ Realtime WebSocket
+              </span>
             </div>
 
-            {/* Quick URL Pills */}
-            <div className="flex flex-wrap gap-1.5">
-              <button
-                type="button"
-                onClick={() => handleQuickUrl('https://kaswifi.my.id')}
-                className="text-[10px] font-bold px-2 py-1 rounded-lg bg-white border border-slate-200 text-blue-700 hover:bg-blue-50"
-              >
-                🌐 https://kaswifi.my.id (Live)
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickUrl('http://192.168.66.18')}
-                className="text-[10px] font-bold px-2 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100"
-              >
-                🖥️ 192.168.66.18 (LXC Proxmox)
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickUrl('http://localhost/kas-wifi')}
-                className="text-[10px] font-bold px-2 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100"
-              >
-                💻 localhost/kas-wifi (Laragon)
-              </button>
+            <div className="p-2.5 bg-white rounded-xl border border-slate-200 text-xs space-y-1">
+              <div className="flex justify-between text-slate-500 text-[11px]">
+                <span>Project URL:</span>
+                <span className="font-mono text-slate-800 truncate max-w-[200px]">
+                  {SupabaseService.config.url}
+                </span>
+              </div>
+              <div className="flex justify-between text-slate-500 text-[11px]">
+                <span>Status Sinkron:</span>
+                <span className="font-bold text-emerald-600">Aktif Real-time</span>
+              </div>
             </div>
 
             {/* Tombol Test Connection */}
-            <div className="pt-1">
+            <div className="pt-0.5">
               <button
                 type="button"
                 onClick={handleTestConnection}
                 disabled={isTesting}
-                className="w-full py-2 px-3 rounded-xl bg-white hover:bg-slate-100 text-blue-700 border border-blue-200 font-bold text-xs flex items-center justify-center space-x-1.5 transition-colors"
+                className="w-full py-2 px-3 rounded-xl bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-300 font-bold text-xs flex items-center justify-center space-x-1.5 transition-colors shadow-2xs"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isTesting ? 'animate-spin' : ''}`} />
-                <span>{isTesting ? 'Memeriksa Koneksi...' : 'Tes Koneksi Server'}</span>
+                <span>{isTesting ? 'Memeriksa Koneksi...' : 'Periksa Koneksi Supabase'}</span>
               </button>
 
               {connStatus && (
@@ -184,55 +155,11 @@ export function SettingsModal({ isOpen, onClose, onSyncComplete }) {
             </div>
           </div>
 
-          {/* 2. MODE OPERASIONAL */}
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Mode Aplikasi
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setMode('online')}
-                className={`p-3 rounded-2xl border text-left transition-all ${
-                  mode === 'online'
-                    ? 'bg-blue-50 border-blue-600 ring-2 ring-blue-600/20'
-                    : 'bg-white border-slate-200 hover:bg-slate-50'
-                }`}
-              >
-                <div className="flex items-center space-x-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                  <span className="text-xs font-bold text-slate-800">Online (Sinkron)</span>
-                </div>
-                <p className="text-[10px] text-slate-500 mt-0.5">
-                  Data otomatis terhubung ke database MySQL.
-                </p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setMode('offline')}
-                className={`p-3 rounded-2xl border text-left transition-all ${
-                  mode === 'offline'
-                    ? 'bg-blue-50 border-blue-600 ring-2 ring-blue-600/20'
-                    : 'bg-white border-slate-200 hover:bg-slate-50'
-                }`}
-              >
-                <div className="flex items-center space-x-1.5">
-                  <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-                  <span className="text-xs font-bold text-slate-800">Offline (Lokal)</span>
-                </div>
-                <p className="text-[10px] text-slate-500 mt-0.5">
-                  Tersimpan di memori HP, sinkron saat online.
-                </p>
-              </button>
-            </div>
-          </div>
-
-          {/* 3. SINKRONISASI MANUAL */}
+          {/* 2. SINKRONISASI MANUAL KE CLOUD */}
           <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between">
             <div>
-              <span className="text-xs font-bold text-slate-800 block">Kirim Data Offline</span>
-              <span className="text-[10px] text-slate-500">Kirim transaksi tertunda ke server sekarang</span>
+              <span className="text-xs font-bold text-slate-800 block">Kirim Data ke Supabase</span>
+              <span className="text-[10px] text-slate-500">Paksa sinkronisasi seluruh catatan kasir</span>
             </div>
             <button
               type="button"
@@ -262,9 +189,9 @@ export function SettingsModal({ isOpen, onClose, onSyncComplete }) {
             </div>
           )}
 
-          {/* 4. INFO USAHA & NOTA */}
+          {/* 3. INFO USAHA & NOTA */}
           <div className="space-y-2 pt-1 border-t border-slate-200">
-            <span className="text-xs font-bold text-slate-800 block">Informasi Struk Thermal</span>
+            <span className="text-xs font-bold text-slate-800 block">Pengaturan Struk Thermal</span>
 
             <div>
               <label className="block text-[11px] font-semibold text-slate-500 mb-0.5">
@@ -281,13 +208,26 @@ export function SettingsModal({ isOpen, onClose, onSyncComplete }) {
 
             <div>
               <label className="block text-[11px] font-semibold text-slate-500 mb-0.5">
-                Alamat / Keterangan
+                Alamat / Keterangan Usaha
               </label>
               <input
                 type="text"
                 value={shopAddress}
                 onChange={(e) => setShopAddress(e.target.value)}
                 placeholder="Hotspot Voucher RT/RW Net Berkah"
+                className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-500 mb-0.5">
+                Catatan Kaki Struk
+              </label>
+              <input
+                type="text"
+                value={footerNote}
+                onChange={(e) => setFooterNote(e.target.value)}
+                placeholder="Terima kasih telah berlangganan!"
                 className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
               />
             </div>
