@@ -8,27 +8,27 @@ export function QuickActions({ onOpenAddModal, onOpenTransferModal }) {
       id: 'pemasukan',
       title: 'Pemasukan',
       icon: PlusCircle,
-      iconColor: 'text-emerald-600',
-      iconBg: 'bg-emerald-50 border-emerald-200/60',
-      hoverBorder: 'hover:border-emerald-300',
+      iconColor: '#059669',
+      iconBg: '#ecfdf5',
+      iconBorder: '#a7f3d0',
       onClick: () => onOpenAddModal('pemasukan')
     },
     {
       id: 'pengeluaran',
       title: 'Pengeluaran',
       icon: MinusCircle,
-      iconColor: 'text-rose-600',
-      iconBg: 'bg-rose-50 border-rose-200/60',
-      hoverBorder: 'hover:border-rose-300',
+      iconColor: '#e11d48',
+      iconBg: '#fff1f2',
+      iconBorder: '#fecdd3',
       onClick: () => onOpenAddModal('pengeluaran')
     },
     {
       id: 'transfer',
       title: 'Transfer',
       icon: ArrowLeftRight,
-      iconColor: 'text-blue-600',
-      iconBg: 'bg-blue-50 border-blue-200/60',
-      hoverBorder: 'hover:border-blue-300',
+      iconColor: '#2563eb',
+      iconBg: '#eff6ff',
+      iconBorder: '#bfdbfe',
       onClick: onOpenTransferModal
     }
   ];
@@ -41,14 +41,16 @@ export function QuickActions({ onOpenAddModal, onOpenTransferModal }) {
           <button
             key={act.id}
             onClick={act.onClick}
-            className={`flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md active:scale-95 transition-all text-center group ${act.hoverBorder}`}
+            style={{ backgroundColor: '#ffffff' }}
+            className="flex flex-col items-center justify-center p-3 rounded-2xl border border-slate-200 shadow-xs hover:shadow-md active:scale-95 transition-all text-center group"
           >
             <div
-              className={`w-11 h-11 rounded-xl ${act.iconBg} border flex items-center justify-center ${act.iconColor} mb-1.5 shadow-2xs group-hover:scale-105 transition-transform`}
+              style={{ backgroundColor: act.iconBg, color: act.iconColor, borderColor: act.iconBorder }}
+              className="w-11 h-11 rounded-xl border flex items-center justify-center mb-1.5 shadow-2xs group-hover:scale-105 transition-transform"
             >
               <Icon className="w-5 h-5" />
             </div>
-            <span className="text-xs font-bold text-slate-800">{act.title}</span>
+            <span style={{ color: '#1e293b' }} className="text-xs font-bold">{act.title}</span>
           </button>
         );
       })}

@@ -10,7 +10,7 @@ export function BottomNav({ activeTab, onTabChange }) {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] px-4 py-2">
+    <nav style={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0' }} className="fixed bottom-0 left-0 right-0 z-40 border-t shadow-[0_-4px_20px_rgba(0,0,0,0.06)] px-4 py-2">
       <div className="max-w-md mx-auto grid grid-cols-3 gap-2">
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -19,16 +19,15 @@ export function BottomNav({ activeTab, onTabChange }) {
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
+              style={{ color: isActive ? '#2563eb' : '#64748b' }}
               className={`flex flex-col items-center justify-center py-1 px-1 rounded-xl transition-all ${
-                isActive
-                  ? 'text-blue-600 font-bold'
-                  : 'text-slate-400 hover:text-slate-600'
+                isActive ? 'font-bold' : 'hover:opacity-80'
               }`}
             >
               <div className="relative">
                 <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5px]' : 'stroke-2'}`} />
                 {isActive && (
-                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
+                  <span style={{ backgroundColor: '#2563eb' }} className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full"></span>
                 )}
               </div>
               <span className="text-[10px] mt-1 tracking-tight">{tab.label}</span>

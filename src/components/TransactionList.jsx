@@ -113,7 +113,7 @@ export function TransactionList({
       </div>
 
       {/* 2. Filter & Pencarian */}
-      <div className="bg-white rounded-2xl p-2.5 shadow-sm border border-slate-200/80 space-y-2">
+      <div style={{ backgroundColor: '#ffffff', color: '#1e293b' }} className="rounded-2xl p-2.5 shadow-xs border border-slate-200 space-y-2">
         <div className="flex items-center space-x-2">
           {/* Kolom Cari */}
           <div className="relative flex-1">
@@ -123,7 +123,8 @@ export function TransactionList({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari voucher, keterangan..."
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-8 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              style={{ backgroundColor: '#f8fafc', color: '#0f172a' }}
+              className="w-full border border-slate-200 rounded-xl pl-9 pr-8 py-1.5 text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
             />
             {searchQuery && (
               <button
@@ -141,7 +142,8 @@ export function TransactionList({
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              style={{ backgroundColor: '#f8fafc', color: '#0f172a' }}
+              className="w-full border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
             />
             {selectedDate && (
               <button
@@ -156,7 +158,7 @@ export function TransactionList({
         </div>
 
         {/* Tab Filter Tipe */}
-        <div className="grid grid-cols-4 gap-1 p-0.5 bg-slate-100 rounded-xl">
+        <div style={{ backgroundColor: '#f1f5f9' }} className="grid grid-cols-4 gap-1 p-0.5 rounded-xl">
           {[
             { id: 'all', label: 'Semua' },
             { id: 'pemasukan', label: 'Masuk' },
@@ -197,7 +199,8 @@ export function TransactionList({
             return (
               <div
                 key={isTransfer ? `tr-${item.id}` : `tx-${item.id}`}
-                className="bg-white rounded-xl p-3 border border-slate-200/80 shadow-xs hover:shadow-sm transition-all flex items-center justify-between"
+                style={{ backgroundColor: '#ffffff', color: '#1e293b' }}
+                className="rounded-xl p-3 border border-slate-200 shadow-xs hover:shadow-sm transition-all flex items-center justify-between"
               >
                 {/* Bagian Kiri: Ikon & Detail */}
                 <div className="flex items-center space-x-3 flex-1 min-w-0 pr-2">

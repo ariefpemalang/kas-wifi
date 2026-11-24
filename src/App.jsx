@@ -165,7 +165,7 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+    <div style={{ backgroundColor: '#f8fafc', color: '#1e293b' }} className="min-h-screen flex flex-col font-sans selection:bg-blue-600 selection:text-white">
       {/* Header Bersih Khas Web KAS WIFI */}
       <Header
         mode={mode}

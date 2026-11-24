@@ -34,28 +34,28 @@ export function WalletCarousel({ summary, onSelectWallet, activeWalletFilter }) 
       case 'TUNAI':
         return {
           icon: Banknote,
-          bgGradient: 'bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800',
+          bgGradient: 'wallet-tunai-bg',
           badgeBg: 'bg-emerald-950/40 text-emerald-100',
           label: 'Kas Fisik / Laci'
         };
       case 'DANA':
         return {
           icon: Smartphone,
-          bgGradient: 'bg-gradient-to-br from-sky-500 via-blue-600 to-blue-700',
+          bgGradient: 'wallet-dana-bg',
           badgeBg: 'bg-blue-950/40 text-sky-100',
           label: 'E-Wallet DANA'
         };
       case 'QRIN':
         return {
           icon: QrCode,
-          bgGradient: 'bg-gradient-to-br from-orange-500 via-amber-600 to-orange-700',
+          bgGradient: 'wallet-qrin-bg',
           badgeBg: 'bg-orange-950/40 text-orange-100',
           label: 'QRIS Merchant'
         };
       default:
         return {
           icon: Wallet,
-          bgGradient: 'bg-gradient-to-br from-slate-700 to-slate-800',
+          bgGradient: 'wallet-total-bg',
           badgeBg: 'bg-slate-900/40 text-slate-100',
           label: 'Dompet Kas'
         };
@@ -65,7 +65,7 @@ export function WalletCarousel({ summary, onSelectWallet, activeWalletFilter }) 
   return (
     <div className="space-y-3.5">
       {/* 1. KARTU TOTAL SALDO KASIR */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-blue-950 text-white p-4 shadow-md border border-slate-700/50">
+      <div className="relative overflow-hidden rounded-2xl wallet-total-bg text-white p-4 shadow-md border border-slate-700/50">
         <div className="flex items-center justify-between mb-1.5">
           <div className="flex items-center space-x-2">
             <span className="text-[11px] font-semibold text-slate-300 uppercase tracking-wider">
@@ -149,33 +149,33 @@ export function WalletCarousel({ summary, onSelectWallet, activeWalletFilter }) 
       {/* 3. RINGKASAN STATISTIK HARI INI & BULAN INI (Sama seperti Web Kas WiFi) */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
         {/* Pemasukan Hari Ini */}
-        <div className="bg-white rounded-xl p-2.5 border-l-4 border-emerald-500 shadow-sm border border-slate-100">
-          <span className="text-[10px] font-semibold text-slate-500 block">Pemasukan Hari Ini</span>
-          <span className="text-xs font-bold text-emerald-600 block mt-0.5">
+        <div style={{ backgroundColor: '#ffffff', color: '#1e293b' }} className="rounded-xl p-2.5 border-l-emerald shadow-xs border border-slate-200">
+          <span style={{ color: '#64748b' }} className="text-[10px] font-semibold block">Pemasukan Hari Ini</span>
+          <span style={{ color: '#059669' }} className="text-xs font-bold block mt-0.5">
             {showBalance ? formatRupiah(todayIncome) : '••••••'}
           </span>
         </div>
 
         {/* Pengeluaran Hari Ini */}
-        <div className="bg-white rounded-xl p-2.5 border-l-4 border-rose-500 shadow-sm border border-slate-100">
-          <span className="text-[10px] font-semibold text-slate-500 block">Pengeluaran Hari Ini</span>
-          <span className="text-xs font-bold text-rose-600 block mt-0.5">
+        <div style={{ backgroundColor: '#ffffff', color: '#1e293b' }} className="rounded-xl p-2.5 border-l-rose shadow-xs border border-slate-200">
+          <span style={{ color: '#64748b' }} className="text-[10px] font-semibold block">Pengeluaran Hari Ini</span>
+          <span style={{ color: '#e11d48' }} className="text-xs font-bold block mt-0.5">
             {showBalance ? formatRupiah(todayExpense) : '••••••'}
           </span>
         </div>
 
         {/* Pemasukan Bulan Ini */}
-        <div className="bg-white rounded-xl p-2.5 border-l-4 border-blue-500 shadow-sm border border-slate-100">
-          <span className="text-[10px] font-semibold text-slate-500 block">Pemasukan Bulan Ini</span>
-          <span className="text-xs font-bold text-blue-600 block mt-0.5">
+        <div style={{ backgroundColor: '#ffffff', color: '#1e293b' }} className="rounded-xl p-2.5 border-l-blue shadow-xs border border-slate-200">
+          <span style={{ color: '#64748b' }} className="text-[10px] font-semibold block">Pemasukan Bulan Ini</span>
+          <span style={{ color: '#2563eb' }} className="text-xs font-bold block mt-0.5">
             {showBalance ? formatRupiah(monthIncome) : '••••••'}
           </span>
         </div>
 
         {/* Pengeluaran Bulan Ini */}
-        <div className="bg-white rounded-xl p-2.5 border-l-4 border-amber-500 shadow-sm border border-slate-100">
-          <span className="text-[10px] font-semibold text-slate-500 block">Pengeluaran Bulan Ini</span>
-          <span className="text-xs font-bold text-amber-600 block mt-0.5">
+        <div style={{ backgroundColor: '#ffffff', color: '#1e293b' }} className="rounded-xl p-2.5 border-l-amber shadow-xs border border-slate-200">
+          <span style={{ color: '#64748b' }} className="text-[10px] font-semibold block">Pengeluaran Bulan Ini</span>
+          <span style={{ color: '#d97706' }} className="text-xs font-bold block mt-0.5">
             {showBalance ? formatRupiah(monthExpense) : '••••••'}
           </span>
         </div>

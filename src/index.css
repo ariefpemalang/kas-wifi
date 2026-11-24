@@ -1,19 +1,92 @@
 @import "tailwindcss";
 
-@layer base {
-  body {
-    background-color: #f8fafc;
-    color: #1e293b;
-    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
+:root {
+  color-scheme: light only;
+}
+
+html, body {
+  background-color: #f8fafc !important;
+  color: #1e293b !important;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Explicit Fallback Colors for older Android WebViews */
+.bg-slate-50 { background-color: #f8fafc !important; }
+.bg-white { background-color: #ffffff !important; }
+.border-slate-100 { border-color: #f1f5f9 !important; }
+.border-slate-200 { border-color: #e2e8f0 !important; }
+.border-slate-300 { border-color: #cbd5e1 !important; }
+
+/* Text colors */
+.text-slate-900 { color: #0f172a !important; }
+.text-slate-800 { color: #1e293b !important; }
+.text-slate-700 { color: #334155 !important; }
+.text-slate-600 { color: #475569 !important; }
+.text-slate-500 { color: #64748b !important; }
+.text-slate-400 { color: #94a3b8 !important; }
+.text-emerald-600 { color: #059669 !important; }
+.text-emerald-700 { color: #047857 !important; }
+.text-rose-600 { color: #e11d48 !important; }
+.text-rose-700 { color: #be123c !important; }
+.text-blue-600 { color: #2563eb !important; }
+.text-blue-700 { color: #1d4ed8 !important; }
+.text-amber-500 { color: #f59e0b !important; }
+.text-amber-600 { color: #d97706 !important; }
+
+/* Header gradient */
+.header-bg {
+  background: linear-gradient(135deg, #020617 0%, #0f172a 50%, #1e3a8a 100%) !important;
+  color: #ffffff !important;
+}
+
+/* Wallet Card Gradients */
+.wallet-total-bg {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #1e3a8a 100%) !important;
+  color: #ffffff !important;
+}
+
+.wallet-tunai-bg {
+  background: linear-gradient(135deg, #059669 0%, #047857 50%, #0f766e 100%) !important;
+  color: #ffffff !important;
+}
+
+.wallet-dana-bg {
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 50%, #1d4ed8 100%) !important;
+  color: #ffffff !important;
+}
+
+.wallet-qrin-bg {
+  background: linear-gradient(135deg, #ea580c 0%, #d97706 50%, #c2410c 100%) !important;
+  color: #ffffff !important;
+}
+
+/* Stat Card Left Borders */
+.border-l-emerald {
+  border-left-width: 4px !important;
+  border-left-color: #10b981 !important;
+}
+
+.border-l-rose {
+  border-left-width: 4px !important;
+  border-left-color: #f43f5e !important;
+}
+
+.border-l-blue {
+  border-left-width: 4px !important;
+  border-left-color: #3b82f6 !important;
+}
+
+.border-l-amber {
+  border-left-width: 4px !important;
+  border-left-color: #f59e0b !important;
 }
 
 /* Custom Card & Utility Styles */
 .card-clean {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
   border-radius: 1rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
@@ -29,8 +102,8 @@
 
 /* Receipt thermal paper styling */
 .receipt-paper {
-  background-color: #ffffff;
-  color: #111827;
+  background-color: #ffffff !important;
+  color: #111827 !important;
   font-family: 'Courier New', Courier, monospace;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
   position: relative;
