@@ -8,6 +8,10 @@ export default defineConfig({
     react(),
     tailwindcss()
   ],
+  build: {
+    target: ['es2015', 'chrome70', 'edge79', 'safari13'],
+    cssTarget: ['chrome70', 'es2015']
+  },
   server: {
     port: 5173,
     host: true,

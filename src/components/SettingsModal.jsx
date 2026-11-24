@@ -8,16 +8,25 @@ import {
   CheckCircle2,
   AlertCircle,
   Eye,
-  EyeOff
+  EyeOff,
+  Server,
+  RefreshCw,
+  Save
 } from 'lucide-react';
 import { Storage } from '../services/storage';
 import { Api } from '../services/api';
 
 export function SettingsModal({ isOpen, onClose, onSyncComplete }) {
-  // User Profile & Password State
+  // Profil & Kredensial Login Server
   const [username, setUsername] = useState('admin');
+  const [password, setPassword] = useState('admin');
   const [fullName, setFullName] = useState('Kasir Utama');
   const [role, setRole] = useState('admin');
+  const [showLoginPass, setShowLoginPass] = useState(false);
+  const [loginTestLoading, setLoginTestLoading] = useState(false);
+  const [loginMsg, setLoginMsg] = useState(null);
+
+  // Form Ganti Password Akun
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -30,28 +39,46 @@ export function SettingsModal({ isOpen, onClose, onSyncComplete }) {
     if (isOpen) {
       const u = Storage.getUser();
       setUsername(u?.username || 'admin');
+      setPassword(u?.password || 'admin');
       setFullName(u?.nama_lengkap || 'Kasir WiFi');
       setRole(u?.role || 'admin');
 
       setOldPassword('');
       setNewPassword('');
       setConfirmPassword('');
+      setLoginMsg(null);
       setPassMsg(null);
     }
   }, [isOpen]);
 
   if (!isOpen) return null;
 
-  // 1. Simpan Profil Akun
-  const handleSaveProfile = (e) => {
+  // 1. Simpan & Tes Koneksi / Login ke Server kaswifi.my.id
+  const handleSaveAndTestLogin = async (e) => {
     e.preventDefault();
-    Storage.setUser({ username, nama_lengkap: fullName, role });
-    setPassMsg({ success: true, message: 'Profil akun kasir berhasil diperbarui!' });
-    setTimeout(() => setPassMsg(null), 3000);
-    if (onSyncComplete) onSyncComplete();
+    setLoginMsg(null);
+    setLoginTestLoading(true);
+
+    Storage.setUser({ username, password, nama_lengkap: fullName, role });
+
+    const res = await Api.testConnection(username, password);
+    setLoginTestLoading(false);
+
+    if (res.success) {
+      setLoginMsg({
+        success: true,
+        message: '✅ Berhasil login & terhubung ke kaswifi.my.id! Seluruh data transaksi & kategori tersinkron.'
+      });
+      if (onSyncComplete) onSyncComplete();
+    } else {
+      setLoginMsg({
+        success: false,
+        message: '❌ ' + (res.error || 'Login gagal. Periksa kembali username & password server Anda!')
+      });
+    }
   };
 
-  // 2. Ganti Password ke Server
+  // 2. Ganti Password di Server
   const handleChangePassword = async (e) => {
     e.preventDefault();
     setPassMsg(null);
@@ -74,10 +101,13 @@ export function SettingsModal({ isOpen, onClose, onSyncComplete }) {
     setPassLoading(false);
 
     if (res.success) {
+      setPassword(newPassword);
+      Storage.setUser({ password: newPassword });
       setPassMsg({ success: true, message: res.message });
       setOldPassword('');
       setNewPassword('');
       setConfirmPassword('');
+      if (onSyncComplete) onSyncComplete();
     } else {
       setPassMsg({ success: false, message: res.message });
     }
@@ -92,12 +122,15 @@ export function SettingsModal({ isOpen, onClose, onSyncComplete }) {
         {/* Header Modal */}
         <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
           <div className="flex items-center space-x-2.5">
-            <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs">
+            <div
+              style={{ backgroundColor: '#2563eb', color: '#ffffff' }}
+              className="w-9 h-9 rounded-xl flex items-center justify-center shadow-xs"
+            >
               <User className="w-5 h-5" />
             </div>
             <div>
               <h2 className="font-extrabold text-sm text-slate-800 tracking-tight">Pengaturan Kelola Akun</h2>
-              <p className="text-[11px] text-slate-500">Profil Kasir & Keamanan Sandi</p>
+              <p className="text-[11px] text-slate-500">Kredensial Server & Profil Kasir</p>
             </div>
           </div>
           <button
@@ -109,67 +142,129 @@ export function SettingsModal({ isOpen, onClose, onSyncComplete }) {
           </button>
         </div>
 
-        {/* Modal Body: Khusus Kelola Akun & Ganti Password */}
+        {/* Modal Body */}
         <div className="p-4 overflow-y-auto space-y-4">
-          {/* Profil Kasir Card */}
-          <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+          {/* Card 1: Akun & Kredensial Login Server */}
+          <form
+            onSubmit={handleSaveAndTestLogin}
+            style={{ backgroundColor: '#f8fafc', borderColor: '#e2e8f0' }}
+            className="p-4 rounded-2xl border space-y-3"
+          >
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-800 flex items-center space-x-1.5">
                 <ShieldCheck className="w-4 h-4 text-blue-600" />
-                <span>Profil Akun Kasir</span>
+                <span>Akun & Password Server (kaswifi.my.id)</span>
               </span>
-              <span className="text-[10px] font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full border border-blue-200 uppercase">
+              <span
+                style={{ backgroundColor: '#dbeafe', color: '#1e40af', borderColor: '#bfdbfe' }}
+                className="text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase"
+              >
                 {role}
               </span>
             </div>
 
+            <p className="text-[11px] text-slate-500 leading-tight">
+              Pastikan Username & Password sesuai dengan akun kasir Anda di website <strong>kaswifi.my.id</strong> agar sinkronisasi lancar.
+            </p>
+
             <div className="space-y-2.5">
               <div>
-                <label className="block text-[11px] font-semibold text-slate-600 mb-0.5">
-                  Username Login
+                <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
+                  Username Server
                 </label>
                 <input
                   type="text"
+                  required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Username kasir"
-                  className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  placeholder="admin"
+                  style={{ backgroundColor: '#ffffff', color: '#0f172a' }}
+                  className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-600 mb-0.5">
+                <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
+                  Password Login Server
+                </label>
+                <div className="relative">
+                  <input
+                    type={showLoginPass ? 'text' : 'password'}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Masukkan password akun server"
+                    style={{ backgroundColor: '#ffffff', color: '#0f172a' }}
+                    className="w-full border border-slate-300 rounded-xl px-3 py-2 pr-9 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowLoginPass(!showLoginPass)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  >
+                    {showLoginPass ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
                   Nama Lengkap Kasir
                 </label>
                 <input
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Nama lengkap kasir"
-                  className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  placeholder="Nama Kasir"
+                  style={{ backgroundColor: '#ffffff', color: '#0f172a' }}
+                  className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                 />
               </div>
 
+              {loginMsg && (
+                <div
+                  style={
+                    loginMsg.success
+                      ? { backgroundColor: '#ecfdf5', color: '#065f46', borderColor: '#a7f3d0' }
+                      : { backgroundColor: '#fff1f2', color: '#9f1239', borderColor: '#fecdd3' }
+                  }
+                  className="p-2.5 rounded-xl text-xs flex items-start space-x-2 border"
+                >
+                  {loginMsg.success ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                  )}
+                  <span className="leading-tight">{loginMsg.message}</span>
+                </div>
+              )}
+
               <button
-                type="button"
-                onClick={handleSaveProfile}
-                className="w-full py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs rounded-xl border border-blue-200 transition-all active:scale-98"
+                type="submit"
+                disabled={loginTestLoading}
+                style={{ backgroundColor: '#2563eb', color: '#ffffff' }}
+                className="w-full py-2.5 font-bold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center space-x-1.5 active:scale-98"
               >
-                Simpan Perubahan Profil
+                <RefreshCw className={`w-3.5 h-3.5 ${loginTestLoading ? 'animate-spin' : ''}`} />
+                <span>{loginTestLoading ? 'Menghubungkan ke Server...' : 'Simpan & Tes Koneksi Server'}</span>
               </button>
             </div>
-          </div>
+          </form>
 
-          {/* Form Ganti Password */}
-          <form onSubmit={handleChangePassword} className="p-3.5 bg-amber-50/50 rounded-2xl border border-amber-200/80 space-y-3">
+          {/* Card 2: Form Ganti Password Akun */}
+          <form
+            onSubmit={handleChangePassword}
+            style={{ backgroundColor: '#fffbeb', borderColor: '#fde68a' }}
+            className="p-4 rounded-2xl border space-y-3"
+          >
             <div className="flex items-center space-x-1.5">
               <Key className="w-4 h-4 text-amber-600" />
-              <span className="text-xs font-bold text-amber-950">Ganti Password Akun</span>
+              <span className="text-xs font-bold text-amber-950">Ganti Password Akun di Server</span>
             </div>
 
             <div className="space-y-2.5">
               <div>
-                <label className="block text-[11px] font-semibold text-slate-600 mb-0.5">
+                <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
                   Password Saat Ini
                 </label>
                 <div className="relative">
@@ -178,7 +273,8 @@ export function SettingsModal({ isOpen, onClose, onSyncComplete }) {
                     value={oldPassword}
                     onChange={(e) => setOldPassword(e.target.value)}
                     placeholder="Masukkan password saat ini"
-                    className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 pr-9 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                    style={{ backgroundColor: '#ffffff', color: '#0f172a' }}
+                    className="w-full border border-slate-300 rounded-xl px-3 py-2 pr-9 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
                   />
                   <button
                     type="button"
@@ -191,7 +287,7 @@ export function SettingsModal({ isOpen, onClose, onSyncComplete }) {
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-600 mb-0.5">
+                <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
                   Password Baru (Min. 4 karakter)
                 </label>
                 <div className="relative">
@@ -200,7 +296,8 @@ export function SettingsModal({ isOpen, onClose, onSyncComplete }) {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Password baru minimal 4 karakter"
-                    className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 pr-9 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                    style={{ backgroundColor: '#ffffff', color: '#0f172a' }}
+                    className="w-full border border-slate-300 rounded-xl px-3 py-2 pr-9 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
                   />
                   <button
                     type="button"
@@ -213,7 +310,7 @@ export function SettingsModal({ isOpen, onClose, onSyncComplete }) {
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-600 mb-0.5">
+                <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
                   Konfirmasi Password Baru
                 </label>
                 <input
@@ -221,17 +318,19 @@ export function SettingsModal({ isOpen, onClose, onSyncComplete }) {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Ketik ulang password baru"
-                  className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                  style={{ backgroundColor: '#ffffff', color: '#0f172a' }}
+                  className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
                 />
               </div>
 
               {passMsg && (
                 <div
-                  className={`p-2.5 rounded-xl text-xs flex items-center space-x-2 border ${
+                  style={
                     passMsg.success
-                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                      : 'bg-rose-50 text-rose-800 border-rose-200'
-                  }`}
+                      ? { backgroundColor: '#ecfdf5', color: '#065f46', borderColor: '#a7f3d0' }
+                      : { backgroundColor: '#fff1f2', color: '#9f1239', borderColor: '#fecdd3' }
+                  }
+                  className="p-2.5 rounded-xl text-xs flex items-center space-x-2 border"
                 >
                   {passMsg.success ? (
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -245,7 +344,8 @@ export function SettingsModal({ isOpen, onClose, onSyncComplete }) {
               <button
                 type="submit"
                 disabled={passLoading}
-                className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs tracking-wide shadow-xs transition-all flex items-center justify-center space-x-1.5 active:scale-98"
+                style={{ backgroundColor: '#f59e0b', color: '#020617' }}
+                className="w-full py-2.5 rounded-xl font-extrabold text-xs tracking-wide shadow-xs transition-all flex items-center justify-center space-x-1.5 active:scale-98"
               >
                 <Key className={`w-3.5 h-3.5 ${passLoading ? 'animate-spin' : ''}`} />
                 <span>{passLoading ? 'Menyimpan ke Server...' : 'Perbarui Password Akun'}</span>

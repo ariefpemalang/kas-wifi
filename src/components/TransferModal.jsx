@@ -71,11 +71,17 @@ export function TransferModal({ isOpen, onClose, onSave, wallets = [] }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-xs p-0 sm:p-4">
-      <div className="w-full max-w-lg bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col border border-slate-200">
+      <div
+        style={{ backgroundColor: '#ffffff', color: '#1e293b' }}
+        className="w-full max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col border border-slate-200"
+      >
         {/* Header */}
         <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
           <div className="flex items-center space-x-2.5">
-            <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+            <div
+              style={{ backgroundColor: '#dbeafe', color: '#1d4ed8' }}
+              className="w-9 h-9 rounded-xl flex items-center justify-center font-bold"
+            >
               <ArrowLeftRight className="w-4 h-4" />
             </div>
             <div>
@@ -94,7 +100,10 @@ export function TransferModal({ isOpen, onClose, onSave, wallets = [] }) {
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto">
           {/* Dompet Asal & Tujuan */}
-          <div className="grid grid-cols-1 gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-200">
+          <div
+            style={{ backgroundColor: '#f8fafc' }}
+            className="grid grid-cols-1 gap-2 p-3 rounded-2xl border border-slate-200"
+          >
             {/* Sumber */}
             <div>
               <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
@@ -103,7 +112,8 @@ export function TransferModal({ isOpen, onClose, onSave, wallets = [] }) {
               <select
                 value={fromWalletId}
                 onChange={(e) => setFromWalletId(Number(e.target.value))}
-                className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                style={{ backgroundColor: '#ffffff', color: '#1e293b' }}
+                className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
               >
                 {wallets.map((w) => (
                   <option key={w.id} value={w.id}>
@@ -118,7 +128,8 @@ export function TransferModal({ isOpen, onClose, onSave, wallets = [] }) {
               <button
                 type="button"
                 onClick={handleSwap}
-                className="p-1.5 rounded-full bg-white hover:bg-slate-100 text-blue-600 border border-slate-200 shadow-xs transition-colors"
+                style={{ backgroundColor: '#ffffff', color: '#2563eb' }}
+                className="p-1.5 rounded-full hover:bg-slate-100 border border-slate-200 shadow-xs transition-colors"
                 title="Tukar Dompet"
               >
                 <ArrowLeftRight className="w-3.5 h-3.5" />
@@ -133,7 +144,8 @@ export function TransferModal({ isOpen, onClose, onSave, wallets = [] }) {
               <select
                 value={toWalletId}
                 onChange={(e) => setToWalletId(Number(e.target.value))}
-                className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                style={{ backgroundColor: '#ffffff', color: '#1e293b' }}
+                className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
               >
                 {wallets.map((w) => (
                   <option key={w.id} value={w.id} disabled={w.id === fromWalletId}>
@@ -160,7 +172,8 @@ export function TransferModal({ isOpen, onClose, onSave, wallets = [] }) {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0"
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-11 pr-4 py-2.5 text-base font-extrabold text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                style={{ backgroundColor: '#ffffff', color: '#0f172a' }}
+                className="w-full border border-slate-300 rounded-xl pl-11 pr-4 py-2.5 text-base font-extrabold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
               />
             </div>
           </div>
@@ -175,7 +188,8 @@ export function TransferModal({ isOpen, onClose, onSave, wallets = [] }) {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Contoh: Tarik saldo QRIS ke Kasir"
-              className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              style={{ backgroundColor: '#ffffff', color: '#1e293b' }}
+              className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
             />
           </div>
 
@@ -188,7 +202,8 @@ export function TransferModal({ isOpen, onClose, onSave, wallets = [] }) {
               type="datetime-local"
               value={transferTime}
               onChange={(e) => setTransferTime(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              style={{ backgroundColor: '#ffffff', color: '#1e293b' }}
+              className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
             />
           </div>
 
@@ -196,7 +211,8 @@ export function TransferModal({ isOpen, onClose, onSave, wallets = [] }) {
           <div className="pt-2">
             <button
               type="submit"
-              className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 font-bold text-xs uppercase tracking-wider text-white shadow-md active:scale-98 transition-all"
+              style={{ backgroundColor: '#2563eb', color: '#ffffff' }}
+              className="w-full py-3 rounded-xl font-bold text-xs uppercase tracking-wider shadow-md active:scale-98 transition-all"
             >
               Proses Pindah Saldo
             </button>

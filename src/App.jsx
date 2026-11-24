@@ -36,6 +36,7 @@ export function App() {
   // Sync state
   const [isSyncing, setIsSyncing] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+  const [syncError, setSyncError] = useState(null);
 
   // Load initial data dari Supabase Cloud & Local Cache
   const loadData = useCallback(async () => {
@@ -59,10 +60,14 @@ export function App() {
         if (res.data.categories) setCategories(res.data.categories);
         if (res.data.recent_transactions) setTransactions(Storage.getTransactions());
         if (res.data.recent_transfers) setTransfers(Storage.getTransfers());
+        setSyncError(null);
+      } else {
+        setSyncError(res.message || 'Gagal sinkron data server kaswifi.my.id');
       }
       setMode('online');
     } catch (e) {
       console.warn('[App] Mode offline aktif:', e);
+      setSyncError('Koneksi server terputus atau password akun salah');
       setMode('offline');
     } finally {
       setIsSyncing(false);
@@ -179,6 +184,26 @@ export function App() {
 
       {/* Main Content Area (Mobile Container) */}
       <main className="flex-1 max-w-md w-full mx-auto px-4 py-3.5 pb-24 space-y-4">
+        {/* Banner Peringatan Kredensial Server jika ada kendala login */}
+        {syncError && (
+          <div
+            onClick={() => setIsSettingsModalOpen(true)}
+            style={{ backgroundColor: '#fff1f2', color: '#9f1239', borderColor: '#fecdd3' }}
+            className="p-3 rounded-2xl border flex items-center justify-between text-xs cursor-pointer shadow-xs active:scale-98 transition-all"
+          >
+            <div className="flex items-center space-x-2">
+              <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+              <span className="font-semibold text-[11px] leading-tight">{syncError}</span>
+            </div>
+            <span
+              style={{ backgroundColor: '#e11d48', color: '#ffffff' }}
+              className="text-[10px] font-bold px-2.5 py-1 rounded-lg shrink-0 ml-2 shadow-2xs"
+            >
+              Atur Akun
+            </span>
+          </div>
+        )}
+
         {/* Render Berdasarkan Tab Aktif */}
         {activeTab === 'dashboard' && (
           <>

@@ -2,6 +2,57 @@
 
 :root {
   color-scheme: light only;
+
+  /* Explicit Standard Hex Fallbacks for Tailwind Color Variables */
+  --color-emerald-50: #ecfdf5 !important;
+  --color-emerald-100: #d1fae5 !important;
+  --color-emerald-200: #a7f3d0 !important;
+  --color-emerald-500: #10b981 !important;
+  --color-emerald-600: #059669 !important;
+  --color-emerald-700: #047857 !important;
+  --color-emerald-800: #065f46 !important;
+  --color-emerald-950: #022c22 !important;
+
+  --color-blue-50: #eff6ff !important;
+  --color-blue-100: #dbeafe !important;
+  --color-blue-200: #bfdbfe !important;
+  --color-blue-400: #60a5fa !important;
+  --color-blue-500: #3b82f6 !important;
+  --color-blue-600: #2563eb !important;
+  --color-blue-700: #1d4ed8 !important;
+  --color-blue-800: #1e40af !important;
+  --color-blue-900: #1e3a8a !important;
+  --color-blue-950: #172554 !important;
+
+  --color-rose-50: #fff1f2 !important;
+  --color-rose-100: #ffe4e6 !important;
+  --color-rose-200: #fecdd3 !important;
+  --color-rose-500: #f43f5e !important;
+  --color-rose-600: #e11d48 !important;
+  --color-rose-700: #be123c !important;
+  --color-rose-800: #9f1239 !important;
+
+  --color-amber-50: #fffbeb !important;
+  --color-amber-100: #fef3c7 !important;
+  --color-amber-200: #fde68a !important;
+  --color-amber-400: #fbbf24 !important;
+  --color-amber-500: #f59e0b !important;
+  --color-amber-600: #d97706 !important;
+  --color-amber-950: #451a03 !important;
+
+  --color-slate-50: #f8fafc !important;
+  --color-slate-100: #f1f5f9 !important;
+  --color-slate-200: #e2e8f0 !important;
+  --color-slate-300: #cbd5e1 !important;
+  --color-slate-400: #94a3b8 !important;
+  --color-slate-500: #64748b !important;
+  --color-slate-600: #475569 !important;
+  --color-slate-700: #334155 !important;
+  --color-slate-800: #1e293b !important;
+  --color-slate-900: #0f172a !important;
+  --color-slate-950: #020617 !important;
+
+  --color-white: #ffffff !important;
 }
 
 html, body {
@@ -12,14 +63,43 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Explicit Fallback Colors for older Android WebViews */
+/* Explicit Background Colors for older Android WebViews */
+.bg-emerald-600 { background-color: #059669 !important; }
+.bg-emerald-700 { background-color: #047857 !important; }
+.bg-emerald-500 { background-color: #10b981 !important; }
+.bg-emerald-100 { background-color: #d1fae5 !important; }
+.bg-emerald-50 { background-color: #ecfdf5 !important; }
+
+.bg-rose-600 { background-color: #e11d48 !important; }
+.bg-rose-700 { background-color: #be123c !important; }
+.bg-rose-500 { background-color: #f43f5e !important; }
+.bg-rose-100 { background-color: #ffe4e6 !important; }
+.bg-rose-50 { background-color: #fff1f2 !important; }
+
+.bg-blue-600 { background-color: #2563eb !important; }
+.bg-blue-700 { background-color: #1d4ed8 !important; }
+.bg-blue-800 { background-color: #1e40af !important; }
+.bg-blue-500 { background-color: #3b82f6 !important; }
+.bg-blue-100 { background-color: #dbeafe !important; }
+.bg-blue-50 { background-color: #eff6ff !important; }
+
+.bg-amber-500 { background-color: #f59e0b !important; }
+.bg-amber-600 { background-color: #d97706 !important; }
+.bg-amber-100 { background-color: #fef3c7 !important; }
+.bg-amber-50 { background-color: #fffbeb !important; }
+
 .bg-slate-50 { background-color: #f8fafc !important; }
+.bg-slate-100 { background-color: #f1f5f9 !important; }
+.bg-slate-200 { background-color: #e2e8f0 !important; }
+.bg-slate-300 { background-color: #cbd5e1 !important; }
+.bg-slate-800 { background-color: #1e293b !important; }
+.bg-slate-900 { background-color: #0f172a !important; }
+.bg-slate-950 { background-color: #020617 !important; }
 .bg-white { background-color: #ffffff !important; }
-.border-slate-100 { border-color: #f1f5f9 !important; }
-.border-slate-200 { border-color: #e2e8f0 !important; }
-.border-slate-300 { border-color: #cbd5e1 !important; }
 
 /* Text colors */
+.text-white { color: #ffffff !important; }
+.text-slate-950 { color: #020617 !important; }
 .text-slate-900 { color: #0f172a !important; }
 .text-slate-800 { color: #1e293b !important; }
 .text-slate-700 { color: #334155 !important; }
@@ -32,8 +112,17 @@ html, body {
 .text-rose-700 { color: #be123c !important; }
 .text-blue-600 { color: #2563eb !important; }
 .text-blue-700 { color: #1d4ed8 !important; }
+.text-amber-400 { color: #fbbf24 !important; }
 .text-amber-500 { color: #f59e0b !important; }
 .text-amber-600 { color: #d97706 !important; }
+
+/* Borders */
+.border-slate-100 { border-color: #f1f5f9 !important; }
+.border-slate-200 { border-color: #e2e8f0 !important; }
+.border-slate-300 { border-color: #cbd5e1 !important; }
+.border-blue-600 { border-color: #2563eb !important; }
+.border-emerald-600 { border-color: #059669 !important; }
+.border-rose-600 { border-color: #e11d48 !important; }
 
 /* Header gradient */
 .header-bg {
@@ -89,27 +178,4 @@ html, body {
   border: 1px solid #e2e8f0 !important;
   border-radius: 1rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-.card-clean-hover {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.card-clean-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-}
-
-/* Receipt thermal paper styling */
-.receipt-paper {
-  background-color: #ffffff !important;
-  color: #111827 !important;
-  font-family: 'Courier New', Courier, monospace;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
-  position: relative;
-}
-
-.receipt-zigzag-bottom {
-  background: radial-gradient(circle, transparent, transparent 50%, #fff 50%, #fff 100% );
-  background-size: 10px 10px;
 }

@@ -1,6 +1,6 @@
 // src/components/AddTransactionModal.jsx
 import React, { useState, useEffect } from 'react';
-import { X, ArrowDownLeft, ArrowUpRight, Check, Sparkles, Calendar, Clock } from 'lucide-react';
+import { X, ArrowDownLeft, ArrowUpRight, Check } from 'lucide-react';
 import { formatRupiah } from '../utils/format';
 
 export function AddTransactionModal({
@@ -52,6 +52,8 @@ export function AddTransactionModal({
     const newCats = categories.filter((c) => c.type === newType);
     if (newCats.length > 0) {
       setCategoryId(newCats[0].id);
+    } else {
+      setCategoryId('');
     }
   };
 
@@ -76,16 +78,20 @@ export function AddTransactionModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-xs p-0 sm:p-4">
-      <div className="w-full max-w-lg bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col border border-slate-200">
+      <div
+        style={{ backgroundColor: '#ffffff', color: '#1e293b' }}
+        className="w-full max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col border border-slate-200"
+      >
         {/* Header Modal */}
         <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
           <div className="flex items-center space-x-2.5">
             <div
-              className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+              style={
                 type === 'pemasukan'
-                  ? 'bg-emerald-100 text-emerald-700'
-                  : 'bg-rose-100 text-rose-700'
-              }`}
+                  ? { backgroundColor: '#d1fae5', color: '#047857' }
+                  : { backgroundColor: '#ffe4e6', color: '#be123c' }
+              }
+              className="w-9 h-9 rounded-xl flex items-center justify-center font-bold"
             >
               {type === 'pemasukan' ? (
                 <ArrowDownLeft className="w-5 h-5" />
@@ -111,15 +117,19 @@ export function AddTransactionModal({
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto">
           {/* Switch Pemasukan / Pengeluaran */}
-          <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 rounded-2xl border border-slate-200">
+          <div
+            style={{ backgroundColor: '#f1f5f9' }}
+            className="grid grid-cols-2 gap-1.5 p-1 rounded-2xl border border-slate-200"
+          >
             <button
               type="button"
               onClick={() => handleTypeChange('pemasukan')}
-              className={`py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center space-x-1.5 ${
+              style={
                 type === 'pemasukan'
-                  ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
+                  ? { backgroundColor: '#059669', color: '#ffffff' }
+                  : { backgroundColor: 'transparent', color: '#475569' }
+              }
+              className="py-2.5 text-xs font-bold rounded-xl transition-all flex items-center justify-center space-x-1.5 shadow-xs"
             >
               <ArrowDownLeft className="w-3.5 h-3.5" />
               <span>Pemasukan</span>
@@ -127,11 +137,12 @@ export function AddTransactionModal({
             <button
               type="button"
               onClick={() => handleTypeChange('pengeluaran')}
-              className={`py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center space-x-1.5 ${
+              style={
                 type === 'pengeluaran'
-                  ? 'bg-rose-600 text-white shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
+                  ? { backgroundColor: '#e11d48', color: '#ffffff' }
+                  : { backgroundColor: 'transparent', color: '#475569' }
+              }
+              className="py-2.5 text-xs font-bold rounded-xl transition-all flex items-center justify-center space-x-1.5 shadow-xs"
             >
               <ArrowUpRight className="w-3.5 h-3.5" />
               <span>Pengeluaran</span>
@@ -154,7 +165,8 @@ export function AddTransactionModal({
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0"
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-11 pr-4 py-2.5 text-base font-extrabold text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                style={{ backgroundColor: '#f8fafc', color: '#0f172a' }}
+                className="w-full border border-slate-300 rounded-xl pl-11 pr-4 py-2.5 text-base font-extrabold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
               />
             </div>
           </div>
@@ -172,11 +184,12 @@ export function AddTransactionModal({
                     key={w.id}
                     type="button"
                     onClick={() => setWalletId(w.id)}
-                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center space-x-1 ${
+                    style={
                       isSelected
-                        ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                    }`}
+                        ? { backgroundColor: '#2563eb', color: '#ffffff', borderColor: '#2563eb' }
+                        : { backgroundColor: '#ffffff', color: '#334155', borderColor: '#cbd5e1' }
+                    }
+                    className="py-2 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center space-x-1 shadow-2xs"
                   >
                     {isSelected && <Check className="w-3.5 h-3.5 mr-0.5" />}
                     <span>{w.name}</span>
@@ -194,13 +207,18 @@ export function AddTransactionModal({
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              style={{ backgroundColor: '#ffffff', color: '#1e293b' }}
+              className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
             >
-              {filteredCategories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
+              {filteredCategories.length === 0 ? (
+                <option value="">-- Tanpa Kategori --</option>
+              ) : (
+                filteredCategories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))
+              )}
             </select>
           </div>
 
@@ -214,7 +232,8 @@ export function AddTransactionModal({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Contoh: Voucher 5 Jam Meja Kasir / Kopi Shift Malam"
-              className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              style={{ backgroundColor: '#ffffff', color: '#1e293b' }}
+              className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
             />
           </div>
 
@@ -227,7 +246,8 @@ export function AddTransactionModal({
               type="datetime-local"
               value={transactionTime}
               onChange={(e) => setTransactionTime(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              style={{ backgroundColor: '#ffffff', color: '#1e293b' }}
+              className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
             />
           </div>
 
@@ -235,11 +255,11 @@ export function AddTransactionModal({
           <div className="pt-2">
             <button
               type="submit"
-              className={`w-full py-3 rounded-xl font-bold text-xs uppercase tracking-wider text-white shadow-md active:scale-98 transition-all ${
-                type === 'pemasukan'
-                  ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/30'
-                  : 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/30'
-              }`}
+              style={{
+                backgroundColor: type === 'pemasukan' ? '#059669' : '#e11d48',
+                color: '#ffffff'
+              }}
+              className="w-full py-3 rounded-xl font-bold text-xs uppercase tracking-wider shadow-md active:scale-98 transition-all"
             >
               Simpan {type === 'pemasukan' ? 'Pemasukan' : 'Pengeluaran'}
             </button>

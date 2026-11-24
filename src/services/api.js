@@ -117,8 +117,12 @@ export const Api = {
   },
 
   // Login otomatis ke server PHP untuk mendapatkan session valid
-  async login(username = 'admin', password = 'admin') {
+  async login(userOverride, passOverride) {
     try {
+      const stored = Storage.getUser();
+      const username = userOverride || stored?.username || 'admin';
+      const password = passOverride || stored?.password || 'admin';
+
       const body = new URLSearchParams({ username, password }).toString();
       const res = await this.request('/login.php', {
         method: 'POST',
@@ -134,21 +138,28 @@ export const Api = {
         }
       }
 
-      return res.status === 200 || res.status === 302;
+      const text = res.text || '';
+      const isFailed = text.includes('salah') || (text.includes('Login - KAS WIFI') && !res.headers?.['location']);
+      
+      if (isFailed) {
+        return { success: false, message: 'Username atau password server salah!' };
+      }
+
+      return { success: true, message: 'Login ke server berhasil!' };
     } catch (e) {
       console.warn('[Api] Login attempt failed:', e);
-      return false;
+      return { success: false, message: 'Gagal menghubungi server: ' + e.message };
     }
   },
 
   // Tes Koneksi ke Server kaswifi.my.id
-  async testConnection() {
+  async testConnection(userOverride, passOverride) {
     try {
-      const res = await this.request('/login.php');
-      if (res.status === 200 || res.status === 302) {
-        return { success: true, message: `⚡ Terhubung ke ${this.getBaseUrl()}!` };
+      const loginRes = await this.login(userOverride, passOverride);
+      if (!loginRes.success) {
+        return { success: false, error: loginRes.message };
       }
-      return { success: false, error: `Respon server: HTTP ${res.status}` };
+      return { success: true, message: `⚡ Terhubung dan terautentikasi di ${this.getBaseUrl()}!` };
     } catch (err) {
       return { success: false, error: err.message || 'Tidak dapat menghubungi server' };
     }
@@ -163,9 +174,11 @@ export const Api = {
 
       // Jika halaman tidak memuat 'TOTAL KAS' (berarti session habis dan redirect ke login), lakukan login ulang
       if (!htmlIndex.includes('TOTAL KAS') || htmlIndex.includes('Masuk untuk Mengelola')) {
-        await this.login();
-        indexRes = await this.request('/index.php');
-        htmlIndex = indexRes.text || '';
+        const loginRes = await this.login();
+        if (loginRes.success) {
+          indexRes = await this.request('/index.php');
+          htmlIndex = indexRes.text || '';
+        }
       }
 
       // Ekstrak Saldo Real masing-masing Wallet dari HTML
@@ -206,13 +219,40 @@ export const Api = {
         htmlTrans = transRes.text || '';
       }
 
-      // Ekstrak Kategori dari dropdown form transaksi
-      const catMatches = [...htmlTrans.matchAll(/<option value="(\d+)" data-type="([^"]*)">([^<]+)<\/option>/g)];
+      // 3. Ekstrak Kategori: Coba dari transaksi.php dulu
+      const catMatches = [...htmlTrans.matchAll(/<option\s+value="(\d+)"\s+data-type="([^"]*)"\s*>([\s\S]*?)<\/option>/gi)];
       let categories = catMatches.map(m => ({
         id: parseInt(m[1], 10),
         type: m[2],
         name: decodeHtml(m[3])
-      }));
+      })).filter(c => c.name && !c.name.includes('--'));
+
+      // 4. Jika kosong, coba ambil langsung dari halaman kategori.php
+      if (categories.length === 0) {
+        try {
+          const katRes = await this.request('/kategori.php');
+          const katHtml = katRes.text || '';
+          if (katHtml.includes('kategori.php?delete=')) {
+            const inPart = katHtml.split('Kategori Pengeluaran')[0] || '';
+            const outPart = katHtml.split('Kategori Pengeluaran')[1] || '';
+            const delMatches = [...katHtml.matchAll(/<a\s+href="kategori\.php\?delete=(\d+)"[\s\S]*?onclick="return confirm\('Hapus kategori\s+([^'?]+)/gi)];
+            if (delMatches.length > 0) {
+              categories = delMatches.map(m => {
+                const id = parseInt(m[1], 10);
+                const name = decodeHtml(m[2]);
+                const isOut = outPart.includes(`delete=${id}`);
+                return {
+                  id,
+                  name,
+                  type: isOut ? 'pengeluaran' : 'pemasukan'
+                };
+              });
+            }
+          }
+        } catch (e) {
+          console.warn('[Api] Gagal fetch kategori.php:', e);
+        }
+      }
 
       if (categories.length === 0) {
         categories = Storage.getCategories();
@@ -247,7 +287,9 @@ export const Api = {
 
       // Simpan data sinkronisasi ke Storage lokal untuk offline cache
       Storage.saveWallets(wallets);
-      Storage.saveCategories(categories);
+      if (categories.length > 0) {
+        Storage.saveCategories(categories);
+      }
       if (transactions.length > 0) {
         Storage.saveTransactions(transactions);
       }

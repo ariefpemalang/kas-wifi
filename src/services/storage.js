@@ -84,11 +84,12 @@ export const Storage = {
 
   getUser() {
     const raw = localStorage.getItem(STORAGE_KEYS.USER);
-    return raw ? JSON.parse(raw) : { username: 'admin', nama_lengkap: 'Kasir WiFi', role: 'admin' };
+    return raw ? JSON.parse(raw) : { username: 'admin', password: 'admin', nama_lengkap: 'Kasir WiFi', role: 'admin' };
   },
 
   setUser(user) {
-    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+    const existing = this.getUser();
+    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify({ ...existing, ...user }));
   },
 
   getSettings() {
