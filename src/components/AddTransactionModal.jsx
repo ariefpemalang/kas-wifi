@@ -55,11 +55,6 @@ export function AddTransactionModal({
     }
   };
 
-  const handleQuickAmount = (val) => {
-    const current = Number(amount) || 0;
-    setAmount(String(current + val));
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     const numAmount = Number(amount);
@@ -78,11 +73,6 @@ export function AddTransactionModal({
     });
     onClose();
   };
-
-  const quickAmounts =
-    type === 'pemasukan'
-      ? [2000, 3000, 5000, 10000, 20000, 50000, 100000]
-      : [10000, 20000, 50000, 100000, 250000, 500000];
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-xs p-0 sm:p-4">
@@ -132,7 +122,7 @@ export function AddTransactionModal({
               }`}
             >
               <ArrowDownLeft className="w-3.5 h-3.5" />
-              <span>Pemasukan (+ Voucher)</span>
+              <span>Pemasukan</span>
             </button>
             <button
               type="button"
@@ -144,7 +134,7 @@ export function AddTransactionModal({
               }`}
             >
               <ArrowUpRight className="w-3.5 h-3.5" />
-              <span>Pengeluaran (- Biaya)</span>
+              <span>Pengeluaran</span>
             </button>
           </div>
 
@@ -166,27 +156,6 @@ export function AddTransactionModal({
                 placeholder="0"
                 className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-11 pr-4 py-2.5 text-base font-extrabold text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
               />
-            </div>
-
-            {/* Quick Amount Pills */}
-            <div className="flex flex-wrap gap-1.5 mt-2">
-              {quickAmounts.map((val) => (
-                <button
-                  key={val}
-                  type="button"
-                  onClick={() => handleQuickAmount(val)}
-                  className="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold border border-slate-200 transition-colors"
-                >
-                  +{formatRupiah(val).replace('Rp ', '')}
-                </button>
-              ))}
-              <button
-                type="button"
-                onClick={() => setAmount('')}
-                className="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-rose-600 text-[11px] font-semibold border border-slate-200 transition-colors"
-              >
-                Reset
-              </button>
             </div>
           </div>
 

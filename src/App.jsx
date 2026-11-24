@@ -228,57 +228,12 @@ export function App() {
             wallets={wallets}
           />
         )}
-
-        {activeTab === 'categories' && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between px-1">
-              <div>
-                <h2 className="text-base font-extrabold text-slate-800">Kategori Kas WiFi</h2>
-                <p className="text-[11px] text-slate-500">
-                  Kategori voucher, tagihan, bandwidth & operasional kasir
-                </p>
-              </div>
-              <button
-                onClick={() => setIsCategoriesModalOpen(true)}
-                className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-colors"
-              >
-                + Kelola
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 gap-2 pt-1">
-              {categories.map((c) => (
-                <div
-                  key={c.id}
-                  className="p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs flex items-center justify-between"
-                >
-                  <span className="text-xs font-bold text-slate-800">{c.name}</span>
-                  <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-lg uppercase ${
-                      c.type === 'pemasukan'
-                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                        : 'bg-rose-100 text-rose-800 border border-rose-200'
-                    }`}
-                  >
-                    {c.type}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </main>
 
       {/* Bottom Navigation */}
       <BottomNav
         activeTab={activeTab}
-        onTabChange={(tab) => {
-          if (tab === 'categories') {
-            setActiveTab('categories');
-          } else {
-            setActiveTab(tab);
-          }
-        }}
+        onTabChange={(tab) => setActiveTab(tab)}
       />
 
       {/* Modals */}

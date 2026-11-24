@@ -1,6 +1,6 @@
 // src/components/Header.jsx
 import React, { useState, useEffect } from 'react';
-import { Wifi, RefreshCw, Settings, Zap } from 'lucide-react';
+import { Wifi, RefreshCw } from 'lucide-react';
 
 export function Header({ mode, setMode, onOpenSettings, isSyncing, onSync, pendingCount, onRefresh }) {
   const [currentTime, setCurrentTime] = useState('');
@@ -67,25 +67,6 @@ export function Header({ mode, setMode, onOpenSettings, isSyncing, onSync, pendi
             title="Sinkronkan ulang data dari server"
           >
             <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
-          </button>
-
-          {/* Status Koneksi */}
-          <button
-            onClick={onOpenSettings}
-            className="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all bg-white/10 hover:bg-white/20 border border-white/15 text-white"
-            title="Klik untuk membuka pengaturan server & sinkronisasi"
-          >
-            <span className={`w-2 h-2 rounded-full ${mode === 'online' ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></span>
-            <span className="text-[11px]">{mode === 'online' ? 'Online' : 'Offline'}</span>
-          </button>
-
-          {/* Pengaturan */}
-          <button
-            onClick={onOpenSettings}
-            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors border border-white/15"
-            aria-label="Pengaturan"
-          >
-            <Settings className="w-4 h-4 text-white" />
           </button>
         </div>
       </div>
