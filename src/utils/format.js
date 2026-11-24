@@ -1,5 +1,17 @@
 // src/utils/format.js
 
+export function decodeHtmlEntities(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .trim();
+}
+
 export function formatRupiah(nominal) {
   if (nominal === undefined || nominal === null || isNaN(nominal)) return 'Rp 0';
   return 'Rp ' + Number(nominal).toLocaleString('id-ID');

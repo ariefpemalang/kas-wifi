@@ -1,7 +1,7 @@
 // src/components/ReceiptModal.jsx
 import React, { useState } from 'react';
 import { X, Printer, Share2, Copy, Check, MessageSquare } from 'lucide-react';
-import { formatRupiah, formatTanggalIndo, generateWhatsAppMessage } from '../utils/format';
+import { formatRupiah, formatTanggalIndo, generateWhatsAppMessage, decodeHtmlEntities } from '../utils/format';
 import { Storage } from '../services/storage';
 
 export function ReceiptModal({ isOpen, onClose, transaction }) {
@@ -20,8 +20,8 @@ export function ReceiptModal({ isOpen, onClose, transaction }) {
     time: transaction?.transaction_time || new Date().toISOString(),
     cashier: user.nama_lengkap || 'Kasir WiFi',
     walletName: transaction?.wallet_name || 'TUNAI',
-    categoryName: transaction?.category_name || 'Voucher WiFi',
-    description: transaction?.description || 'Pembelian Akses Internet',
+    categoryName: decodeHtmlEntities(transaction?.category_name || 'Voucher WiFi'),
+    description: decodeHtmlEntities(transaction?.description || 'Pembelian Akses Internet'),
     amount: transaction?.amount || 5000,
     footerNote: settings.footerNote || 'Terima kasih atas kunjungan Anda!'
   };

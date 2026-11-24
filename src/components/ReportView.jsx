@@ -10,7 +10,7 @@ import {
   Printer,
   ChevronRight
 } from 'lucide-react';
-import { formatRupiah } from '../utils/format';
+import { formatRupiah, decodeHtmlEntities } from '../utils/format';
 
 export function ReportView({ summary, transactions = [], wallets = [] }) {
   const [reportPeriod, setReportPeriod] = useState('today'); // 'today' or 'month'
@@ -24,7 +24,7 @@ export function ReportView({ summary, transactions = [], wallets = [] }) {
   const categoryBreakdown = useMemo(() => {
     const map = {};
     transactions.forEach((t) => {
-      const cat = t.category_name || (t.type === 'pemasukan' ? 'Pemasukan Lain' : 'Pengeluaran Lain');
+      const cat = decodeHtmlEntities(t.category_name || (t.type === 'pemasukan' ? 'Pemasukan Lain' : 'Pengeluaran Lain'));
       if (!map[cat]) {
         map[cat] = { name: cat, type: t.type, total: 0, count: 0 };
       }

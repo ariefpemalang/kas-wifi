@@ -9,6 +9,18 @@ function parseRupiah(str) {
   return parseInt(clean, 10) || 0;
 }
 
+function decodeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .trim();
+}
+
 function extractSessionCookie(headers) {
   if (!headers) return null;
   for (const [key, val] of Object.entries(headers)) {
@@ -199,7 +211,7 @@ export const Api = {
       let categories = catMatches.map(m => ({
         id: parseInt(m[1], 10),
         type: m[2],
-        name: m[3].trim()
+        name: decodeHtml(m[3])
       }));
 
       if (categories.length === 0) {
@@ -207,7 +219,7 @@ export const Api = {
       }
 
       const catMap = {};
-      categories.forEach(c => { catMap[c.id] = c.name; });
+      categories.forEach(c => { catMap[c.id] = decodeHtml(c.name); });
       const walletNames = { 1: 'TUNAI', 2: 'DANA', 3: 'QRIN' };
 
       // Ekstrak Seluruh Transaksi dari openEditModal
@@ -222,10 +234,10 @@ export const Api = {
             wallet_id: Number(item.wallet_id),
             wallet_name: walletNames[item.wallet_id] || 'TUNAI',
             category_id: item.category_id ? Number(item.category_id) : null,
-            category_name: catMap[item.category_id] || (item.type === 'pemasukan' ? 'Pemasukan' : 'Pengeluaran'),
+            category_name: decodeHtml(catMap[item.category_id] || (item.type === 'pemasukan' ? 'Pemasukan' : 'Pengeluaran')),
             amount: Number(item.amount),
             transaction_time: (item.transaction_time || '').replace('T', ' '),
-            description: item.description || '',
+            description: decodeHtml(item.description || ''),
             synced: true
           };
         } catch {

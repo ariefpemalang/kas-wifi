@@ -11,7 +11,7 @@ import {
   XCircle,
   Tag
 } from 'lucide-react';
-import { formatRupiah, formatTanggalIndo, formatJamIndo, getHariIndo } from '../utils/format';
+import { formatRupiah, formatTanggalIndo, formatJamIndo, getHariIndo, decodeHtmlEntities } from '../utils/format';
 
 export function TransactionList({
   transactions = [],
@@ -226,7 +226,7 @@ export function TransactionList({
                       <h4 className="text-xs font-bold text-slate-800 truncate">
                         {isTransfer
                           ? `Transfer: ${item.from_wallet_name} → ${item.to_wallet_name}`
-                          : item.category_name || (isIncome ? 'Pemasukan' : 'Pengeluaran')}
+                          : decodeHtmlEntities(item.category_name || (isIncome ? 'Pemasukan' : 'Pengeluaran'))}
                       </h4>
                       {!isTransfer && item.wallet_name && (
                         <span
@@ -241,12 +241,12 @@ export function TransactionList({
 
                     {item.description && (
                       <p className="text-[11px] text-slate-500 truncate mt-0.5">
-                        {item.description}
+                        {decodeHtmlEntities(item.description)}
                       </p>
                     )}
 
                     <p className="text-[10px] text-slate-400 mt-0.5">
-                      {formatTanggalIndo(timeStr)} • {formatJamIndo(timeStr)} WIB
+                      {formatTanggalIndo(timeStr)} • {formatJamIndo(timeStr)}
                     </p>
                   </div>
                 </div>
