@@ -1,6 +1,7 @@
 // src/components/Header.jsx
 import React, { useState, useEffect } from 'react';
-import { Wifi, RefreshCw, Settings } from 'lucide-react';
+import { RefreshCw, Settings } from 'lucide-react';
+import appLogo from '../assets/app-icon.png';
 
 export function Header({ mode, setMode, onOpenSettings, isSyncing, onSync, pendingCount, onRefresh }) {
   const [currentTime, setCurrentTime] = useState('');
@@ -27,8 +28,14 @@ export function Header({ mode, setMode, onOpenSettings, isSyncing, onSync, pendi
       <div className="flex items-center justify-between">
         {/* Brand & Jam */}
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl bg-white text-blue-700 flex items-center justify-center shadow-md font-bold ring-2 ring-blue-400/30">
-            <Wifi className="w-6 h-6 text-amber-500 animate-pulse" />
+          {/* Icon Title Aplikasi KAS WIFI */}
+          <div className="w-10 h-10 rounded-xl overflow-hidden shadow-md ring-2 ring-blue-400/30 bg-slate-900 shrink-0 flex items-center justify-center">
+            <img
+              src={appLogo}
+              alt="Logo KAS WIFI"
+              className="w-full h-full object-cover"
+              onError={(e) => { e.currentTarget.src = '/app-icon.png'; }}
+            />
           </div>
           <div>
             <div className="flex items-center space-x-1.5">

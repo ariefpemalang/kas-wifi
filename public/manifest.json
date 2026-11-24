@@ -3,14 +3,19 @@
   "name": "KAS WIFI Mobile - Pembukuan & Kasir RT/RW Net",
   "icons": [
     {
-      "src": "/icon.svg",
-      "type": "image/svg+xml",
-      "sizes": "192x192 512x512 any"
+      "src": "/app-icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/app-icon.png",
+      "type": "image/png",
+      "sizes": "512x512"
     }
   ],
   "start_url": "/",
-  "background_color": "#090d16",
-  "theme_color": "#090d16",
+  "background_color": "#1e3a8a",
+  "theme_color": "#1e3a8a",
   "display": "standalone",
   "orientation": "portrait"
 }
