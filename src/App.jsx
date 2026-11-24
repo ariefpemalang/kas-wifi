@@ -72,10 +72,19 @@ export function App() {
   useEffect(() => {
     loadData();
 
-    // Auto-sync interval dengan server (setiap 25 detik)
+    // Smart sync: interval 60 detik dan HANYA berjalan jika aplikasi sedang aktif di layar
     const interval = setInterval(() => {
-      loadData();
-    }, 25000);
+      if (document.visibilityState === 'visible') {
+        loadData();
+      }
+    }, 60000);
+
+    // Otomatis refresh seketika saat aplikasi dibuka kembali (dari layar kunci / minimize)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadData();
+      }
+    };
 
     // Deteksi koneksi internet perangkat
     const handleOnline = () => {
@@ -84,11 +93,15 @@ export function App() {
     };
     const handleOffline = () => setMode('offline');
 
+    window.addEventListener('focus', handleVisibilityChange);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
     return () => {
       clearInterval(interval);
+      window.removeEventListener('focus', handleVisibilityChange);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
