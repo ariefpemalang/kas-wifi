@@ -386,5 +386,41 @@ export const Api = {
     } catch (err) {
       return { success: false, message: 'Gagal sinkron: ' + err.message };
     }
+  },
+
+  // Ganti Password Akun Pengguna di Server kaswifi.my.id
+  async changePassword(oldPass, newPass, confirmPass) {
+    try {
+      await this.login();
+      const body = new URLSearchParams({
+        action: 'ganti_password',
+        pass_lama: oldPass,
+        pass_baru: newPass,
+        pass_konfirm: confirmPass
+      }).toString();
+
+      const res = await this.request('/users.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body
+      });
+
+      const text = res.text || '';
+      if (text.includes('Password lama tidak cocok')) {
+        return { success: false, message: 'Password lama tidak cocok!' };
+      }
+      if (text.includes('minimal harus 4 karakter')) {
+        return { success: false, message: 'Password baru minimal harus 4 karakter!' };
+      }
+      if (text.includes('Konfirmasi password baru tidak sama')) {
+        return { success: false, message: 'Konfirmasi password baru tidak sama!' };
+      }
+      if (text.includes('berhasil diperbarui') || res.status === 200 || res.status === 302) {
+        return { success: true, message: 'Password akun Anda berhasil diperbarui di server!' };
+      }
+      return { success: true, message: 'Password berhasil diubah!' };
+    } catch (err) {
+      return { success: false, message: 'Gagal menghubungi server: ' + err.message };
+    }
   }
 };

@@ -1,6 +1,6 @@
 // src/components/Header.jsx
 import React, { useState, useEffect } from 'react';
-import { Wifi, RefreshCw } from 'lucide-react';
+import { Wifi, RefreshCw, Settings } from 'lucide-react';
 
 export function Header({ mode, setMode, onOpenSettings, isSyncing, onSync, pendingCount, onRefresh }) {
   const [currentTime, setCurrentTime] = useState('');
@@ -67,6 +67,16 @@ export function Header({ mode, setMode, onOpenSettings, isSyncing, onSync, pendi
             title="Sinkronkan ulang data dari server"
           >
             <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
+          </button>
+
+          {/* Tombol Pengaturan Kelola Akun (Pojok Kanan Atas) */}
+          <button
+            onClick={onOpenSettings}
+            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-white transition-all border border-white/10 shadow-xs"
+            title="Pengaturan Kelola Akun"
+            aria-label="Pengaturan Kelola Akun"
+          >
+            <Settings className="w-4 h-4 text-white" />
           </button>
         </div>
       </div>
