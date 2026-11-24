@@ -16,7 +16,7 @@ import { Storage } from '../services/storage';
 import { Api } from '../services/api';
 
 export function SettingsModal({ isOpen, onClose, onSyncComplete }) {
-  const [serverUrl, setServerUrl] = useState('http://192.168.66.18');
+  const [serverUrl, setServerUrl] = useState('https://kaswifi.my.id');
   const [username, setUsername] = useState('admin');
   const [password, setPassword] = useState('admin');
   const [shopName, setShopName] = useState('');
@@ -29,7 +29,7 @@ export function SettingsModal({ isOpen, onClose, onSyncComplete }) {
 
   useEffect(() => {
     if (isOpen) {
-      setServerUrl(Storage.getServerUrl() || 'http://192.168.66.18');
+      setServerUrl(Storage.getServerUrl() || 'https://kaswifi.my.id');
       const u = Storage.getUser();
       setUsername(u?.username || 'admin');
       const s = Storage.getSettings();
@@ -99,7 +99,7 @@ export function SettingsModal({ isOpen, onClose, onSyncComplete }) {
             </div>
             <div>
               <h2 className="font-bold text-sm text-slate-800">Pengaturan & Sinkronisasi Server</h2>
-              <p className="text-[11px] text-slate-500">Koneksi Database Kas WiFi (192.168.66.18)</p>
+              <p className="text-[11px] text-slate-500">Koneksi Database Kas WiFi (kaswifi.my.id)</p>
             </div>
           </div>
           <button
@@ -132,23 +132,23 @@ export function SettingsModal({ isOpen, onClose, onSyncComplete }) {
                 type="text"
                 value={serverUrl}
                 onChange={(e) => setServerUrl(e.target.value)}
-                placeholder="http://192.168.66.18"
+                placeholder="https://kaswifi.my.id"
                 className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
               />
               <div className="flex items-center space-x-2 mt-1.5">
                 <button
                   type="button"
-                  onClick={() => setServerUrl('http://192.168.66.18')}
-                  className="text-[10px] font-semibold bg-white border border-slate-200 px-2 py-0.5 rounded-md text-blue-700 hover:bg-blue-50"
+                  onClick={() => setServerUrl('https://kaswifi.my.id')}
+                  className="text-[10px] font-semibold bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md text-blue-700 hover:bg-blue-100"
                 >
-                  Gunakan 192.168.66.18
+                  Gunakan kaswifi.my.id (Online)
                 </button>
                 <button
                   type="button"
-                  onClick={() => setServerUrl('https://kaswifi.my.id')}
+                  onClick={() => setServerUrl('http://192.168.66.18')}
                   className="text-[10px] font-semibold bg-white border border-slate-200 px-2 py-0.5 rounded-md text-slate-700 hover:bg-slate-50"
                 >
-                  Gunakan kaswifi.my.id
+                  Gunakan 192.168.66.18 (Lokal)
                 </button>
               </div>
             </div>
@@ -187,7 +187,7 @@ export function SettingsModal({ isOpen, onClose, onSyncComplete }) {
           {/* 2. SINKRONISASI MANUAL DENGAN SERVER */}
           <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between">
             <div>
-              <span className="text-xs font-bold text-slate-800 block">Tarik Data dari 192.168.66.18</span>
+              <span className="text-xs font-bold text-slate-800 block">Tarik Data dari kaswifi.my.id</span>
               <span className="text-[10px] text-slate-500">Sinkronkan saldo dan seluruh riwayat transaksi</span>
             </div>
             <button

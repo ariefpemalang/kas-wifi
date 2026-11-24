@@ -37,7 +37,7 @@ export function Header({ mode, setMode, onOpenSettings, isSyncing, onSync, pendi
               </h1>
               <span className="text-[10px] font-bold bg-emerald-500/90 text-white px-2 py-0.5 rounded-full tracking-wider flex items-center space-x-1 shadow-xs">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-200 animate-pulse"></span>
-                <span>192.168.66.18</span>
+                <span>kaswifi.my.id</span>
               </span>
             </div>
             <p className="text-[11px] text-blue-200/90 font-medium">{currentTime}</p>

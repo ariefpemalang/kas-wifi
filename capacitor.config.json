@@ -6,9 +6,17 @@
   "server": {
     "cleartext": true,
     "allowNavigation": [
-      "192.168.66.18",
       "kaswifi.my.id",
-      "*.kaswifi.my.id"
+      "*.kaswifi.my.id",
+      "192.168.66.18"
     ]
+  },
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    },
+    "CapacitorCookies": {
+      "enabled": true
+    }
   }
 }

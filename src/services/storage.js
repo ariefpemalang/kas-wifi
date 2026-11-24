@@ -3,6 +3,7 @@
 
 const STORAGE_KEYS = {
   SERVER_URL: 'kas_wifi_server_url',
+  SESSION_ID: 'kas_wifi_session_id',
   MODE: 'kas_wifi_mode', // 'online' or 'offline'
   WALLETS: 'kas_wifi_wallets_v2',
   CATEGORIES: 'kas_wifi_categories_v2',
@@ -14,7 +15,7 @@ const STORAGE_KEYS = {
 };
 
 const DEFAULT_WALLETS = [
-  { id: 1, name: 'TUNAI', initial_balance: 0, current_balance: 7160000 },
+  { id: 1, name: 'TUNAI', initial_balance: 0, current_balance: 7475000 },
   { id: 2, name: 'DANA', initial_balance: 0, current_balance: 2247701 },
   { id: 3, name: 'QRIN', initial_balance: 0, current_balance: 1141000 }
 ];
@@ -48,12 +49,29 @@ const DEFAULT_SETTINGS = {
 
 export const Storage = {
   getServerUrl() {
-    return localStorage.getItem(STORAGE_KEYS.SERVER_URL) || 'http://192.168.66.18';
+    const saved = localStorage.getItem(STORAGE_KEYS.SERVER_URL);
+    if (!saved || saved.includes('192.168.66.18')) {
+      localStorage.setItem(STORAGE_KEYS.SERVER_URL, 'https://kaswifi.my.id');
+      return 'https://kaswifi.my.id';
+    }
+    return saved;
   },
 
   setServerUrl(url) {
     if (!url) return;
     localStorage.setItem(STORAGE_KEYS.SERVER_URL, url.replace(/\/+$/, ''));
+  },
+
+  getSessionId() {
+    return localStorage.getItem(STORAGE_KEYS.SESSION_ID) || '';
+  },
+
+  setSessionId(id) {
+    if (id) {
+      localStorage.setItem(STORAGE_KEYS.SESSION_ID, id);
+    } else {
+      localStorage.removeItem(STORAGE_KEYS.SESSION_ID);
+    }
   },
 
   getMode() {

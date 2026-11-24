@@ -13,12 +13,12 @@ export default defineConfig({
     host: true,
     proxy: {
       '/server-api': {
-        target: 'http://192.168.66.18',
+        target: 'https://kaswifi.my.id',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/server-api/, ''),
-        cookieDomainRewrite: ''
+        cookieDomainRewrite: '',
+        secure: false
       }
     }
   }
 });
-
