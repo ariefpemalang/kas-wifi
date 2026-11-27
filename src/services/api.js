@@ -168,16 +168,43 @@ export const Api = {
   // Ambil Ringkasan Dashboard, Saldo Real Dompet & Seluruh Transaksi dari Server
   async getDashboardSummary() {
     try {
+      // 0. Coba panggil REST API langsung jika endpoint /api/ sudah terpasang di server
+      try {
+        const apiRes = await this.request('/api/index.php?action=summary');
+        if (apiRes.status === 200 && apiRes.data) {
+          const apiJson = typeof apiRes.data === 'string' ? JSON.parse(apiRes.data) : apiRes.data;
+          if (apiJson && apiJson.status === 'success' && apiJson.data) {
+            const d = apiJson.data;
+            Storage.saveWallets(d.wallets || []);
+            if (d.categories) Storage.saveCategories(d.categories);
+            if (d.recent_transactions) Storage.saveTransactions(d.recent_transactions);
+            return {
+              success: true,
+              source: 'api',
+              data: d
+            };
+          }
+        }
+      } catch (e) {
+        // Fallback ke web scraping session
+      }
+
       // 1. Ambil data dari index.php
       let indexRes = await this.request('/index.php');
       let htmlIndex = indexRes.text || '';
 
       // Jika halaman tidak memuat 'TOTAL KAS' (berarti session habis dan redirect ke login), lakukan login ulang
-      if (!htmlIndex.includes('TOTAL KAS') || htmlIndex.includes('Masuk untuk Mengelola')) {
+      if (!htmlIndex.includes('TOTAL KAS') || htmlIndex.includes('Masuk untuk Mengelola') || indexRes.status === 302) {
         const loginRes = await this.login();
         if (loginRes.success) {
           indexRes = await this.request('/index.php');
           htmlIndex = indexRes.text || '';
+        } else {
+          return {
+            success: false,
+            message: 'Login kaswifi.my.id ditolak: ' + (loginRes.message || 'Password salah') + '. Buka Pengaturan (Gear) dan masukkan Password Akun Server Anda.',
+            data: null
+          };
         }
       }
 
@@ -337,7 +364,36 @@ export const Api = {
   // Simpan Transaksi Baru ke Server kaswifi.my.id
   async createTransaction(tx) {
     try {
-      await this.login();
+      // 0. Coba simpan lewat REST API jika tersedia
+      try {
+        const apiRes = await this.request('/api/index.php?action=save_transaction', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          data: JSON.stringify({
+            type: tx.type,
+            wallet_id: tx.wallet_id,
+            category_id: tx.category_id || null,
+            amount: tx.amount,
+            transaction_time: tx.transaction_time,
+            description: tx.description
+          })
+        });
+        if (apiRes.status === 200) {
+          const json = typeof apiRes.data === 'string' ? JSON.parse(apiRes.data) : apiRes.data;
+          if (json && json.status === 'success') {
+            Storage.addTransaction({ ...tx, synced: true });
+            return { success: true, message: 'Transaksi berhasil disimpan ke kaswifi.my.id!' };
+          }
+        }
+      } catch (e) {
+        // Fallback ke form PHP
+      }
+
+      const loginRes = await this.login();
+      if (!loginRes.success) {
+        throw new Error(loginRes.message || 'Login server ditolak');
+      }
+
       const body = new URLSearchParams({
         action: 'simpan_transaksi',
         type: tx.type,
@@ -348,17 +404,21 @@ export const Api = {
         description: tx.description || ''
       }).toString();
 
-      await this.request('/transaksi.php', {
+      const res = await this.request('/transaksi.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body
       });
 
+      if (res.text && res.text.includes('Login - KAS WIFI')) {
+        throw new Error('Sesi login kedaluwarsa. Periksa password server di menu Gear.');
+      }
+
       Storage.addTransaction({ ...tx, synced: true });
       return { success: true, message: 'Transaksi berhasil disimpan ke kaswifi.my.id!' };
     } catch (err) {
       Storage.addTransaction({ ...tx, synced: false });
-      return { success: false, message: 'Offline: Disimpan ke antrean lokal (' + err.message + ')' };
+      return { success: false, message: 'Tersimpan Offline di HP: ' + err.message };
     }
   },
 

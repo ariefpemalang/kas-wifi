@@ -24,12 +24,26 @@ export function Header({ mode, setMode, onOpenSettings, isSyncing, onSync, pendi
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 bg-gradient-to-r from-slate-950 via-blue-950 to-blue-800 text-white shadow-lg border-b border-blue-900/50 px-4 py-3">
+    <header
+      style={{
+        background: 'linear-gradient(135deg, #090d16 0%, #0f172a 45%, #1e3a8a 100%)',
+        color: '#ffffff',
+        borderBottom: '1px solid rgba(59, 130, 246, 0.25)',
+        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)'
+      }}
+      className="sticky top-0 z-30 px-4 py-2.5"
+    >
       <div className="flex items-center justify-between">
-        {/* Brand & Jam */}
-        <div className="flex items-center space-x-3">
+        {/* Brand Logo & Info */}
+        <div className="flex items-center space-x-2.5">
           {/* Icon Title Aplikasi KAS WIFI */}
-          <div className="w-10 h-10 rounded-xl overflow-hidden shadow-md ring-2 ring-blue-400/30 bg-slate-900 shrink-0 flex items-center justify-center">
+          <div
+            style={{
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.4)',
+              border: '1.5px solid rgba(96, 165, 250, 0.5)'
+            }}
+            className="w-9 h-9 rounded-xl overflow-hidden shrink-0 flex items-center justify-center bg-slate-900"
+          >
             <img
               src={appLogo}
               alt="Logo KAS WIFI"
@@ -37,32 +51,46 @@ export function Header({ mode, setMode, onOpenSettings, isSyncing, onSync, pendi
               onError={(e) => { e.currentTarget.src = '/app-icon.png'; }}
             />
           </div>
-          <div>
-            <div className="flex items-center space-x-1.5">
-              <h1 className="font-extrabold text-lg tracking-tight text-white">
-                KAS <span className="text-amber-400">WIFI</span>
+
+          <div className="flex flex-col justify-center">
+            <div className="flex items-center space-x-1.5 leading-tight">
+              <h1 className="font-extrabold text-base tracking-tight" style={{ color: '#ffffff' }}>
+                KAS <span style={{ color: '#fbbf24' }}>WIFI</span>
               </h1>
-              <span className="text-[10px] font-bold bg-emerald-500/90 text-white px-2 py-0.5 rounded-full tracking-wider flex items-center space-x-1 shadow-xs">
+              <span
+                style={{
+                  backgroundColor: '#059669',
+                  color: '#ffffff',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                }}
+                className="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full tracking-wider flex items-center space-x-1"
+              >
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-200 animate-pulse"></span>
                 <span>kaswifi.my.id</span>
               </span>
             </div>
-            <p className="text-[11px] text-blue-200/90 font-medium">{currentTime}</p>
+            <p className="text-[10.5px] font-medium leading-normal mt-0.5" style={{ color: '#93c5fd' }}>
+              {currentTime}
+            </p>
           </div>
         </div>
 
-        {/* Status Pill & Aksi */}
+        {/* Action Buttons (Refresh & Gear Pengaturan) */}
         <div className="flex items-center space-x-2">
-          {/* Tombol Antrean Sync Offline */}
+          {/* Tombol Antrean Sync Offline jika ada data pending */}
           {pendingCount > 0 && (
             <button
               onClick={onSync}
               disabled={isSyncing}
-              className="flex items-center space-x-1 text-xs bg-amber-500 text-slate-950 font-bold px-2 py-1 rounded-lg shadow-sm animate-pulse"
+              style={{
+                backgroundColor: '#f59e0b',
+                color: '#090d16'
+              }}
+              className="flex items-center space-x-1 text-xs font-bold px-2 py-1 rounded-xl shadow-sm animate-pulse active:scale-95 transition-all"
               title="Ada data belum tersinkron ke cloud, tap untuk sinkronkan"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-              <span className="text-[11px]">{pendingCount} Pending</span>
+              <span className="text-[11px]">{pendingCount}</span>
             </button>
           )}
 
@@ -70,8 +98,14 @@ export function Header({ mode, setMode, onOpenSettings, isSyncing, onSync, pendi
           <button
             onClick={onRefresh}
             disabled={isSyncing}
-            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors border border-white/10"
+            style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.15)',
+              border: '1px solid rgba(255, 255, 255, 0.25)',
+              color: '#ffffff'
+            }}
+            className="p-2 rounded-xl hover:bg-white/25 active:scale-95 transition-all flex items-center justify-center shadow-xs"
             title="Sinkronkan ulang data dari server"
+            aria-label="Refresh Data"
           >
             <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
           </button>
@@ -79,7 +113,12 @@ export function Header({ mode, setMode, onOpenSettings, isSyncing, onSync, pendi
           {/* Tombol Pengaturan Kelola Akun (Pojok Kanan Atas) */}
           <button
             onClick={onOpenSettings}
-            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-white transition-all border border-white/10 shadow-xs"
+            style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.15)',
+              border: '1px solid rgba(255, 255, 255, 0.25)',
+              color: '#ffffff'
+            }}
+            className="p-2 rounded-xl hover:bg-white/25 active:scale-95 transition-all flex items-center justify-center shadow-xs"
             title="Pengaturan Kelola Akun"
             aria-label="Pengaturan Kelola Akun"
           >
