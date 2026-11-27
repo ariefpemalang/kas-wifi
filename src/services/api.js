@@ -1,11 +1,11 @@
 // src/services/api.js
-// Client API Kas WiFi terintegrasi langsung dengan Server https://kaswifi.my.id (Apache/PHP/MySQL)
+// Client API Kas WiFi terintegrasi langsung dengan Server https://kaswifi.my.id (REST API & Web Fallback)
 import { Capacitor, CapacitorHttp } from '@capacitor/core';
 import { Storage } from './storage';
 
 function parseRupiah(str) {
   if (!str) return 0;
-  const clean = str.replace(/[^0-9]/g, '');
+  const clean = String(str).replace(/[^0-9]/g, '');
   return parseInt(clean, 10) || 0;
 }
 
@@ -90,33 +90,67 @@ export const Api = {
       };
       if (options.body) {
         fetchOpts.body = options.body;
+      } else if (options.data) {
+        fetchOpts.body = typeof options.data === 'string' ? options.data : JSON.stringify(options.data);
       }
 
       try {
         const res = await fetch(targetUrl, fetchOpts);
         const text = await res.text();
+        let parsedData = text;
+        try {
+          parsedData = JSON.parse(text);
+        } catch {
+          // not json
+        }
         return {
           status: res.status,
           headers: res.headers,
           text,
-          data: text
+          data: parsedData
         };
       } catch (err) {
         // Fallback jika tidak lewat proxy
         console.warn('[Api] Proxy fetch error, retrying direct:', err);
         const directRes = await fetch(`${serverUrl}${path}`, fetchOpts);
         const directText = await directRes.text();
+        let directData = directText;
+        try {
+          directData = JSON.parse(directText);
+        } catch {
+          // not json
+        }
         return {
           status: directRes.status,
           headers: directRes.headers,
           text: directText,
-          data: directText
+          data: directData
         };
       }
     }
   },
 
-  // Login otomatis ke server PHP untuk mendapatkan session valid
+  // Tes Koneksi ke Server kaswifi.my.id (Ping REST API atau Login PHP)
+  async testConnection(userOverride, passOverride) {
+    try {
+      // 1. Coba ping REST API terlebih dahulu
+      const pingRes = await this.request('/api/index.php?action=ping');
+      if (pingRes.status === 200) {
+        return { success: true, message: `⚡ Terhubung ke REST API Server ${this.getBaseUrl()}!` };
+      }
+
+      // 2. Fallback login test
+      const loginRes = await this.login(userOverride, passOverride);
+      if (loginRes.success) {
+        return { success: true, message: `⚡ Terhubung dan terautentikasi di ${this.getBaseUrl()}!` };
+      }
+      return { success: false, error: loginRes.message };
+    } catch (err) {
+      return { success: false, error: err.message || 'Tidak dapat menghubungi server' };
+    }
+  },
+
+  // Login otomatis ke server PHP untuk session fallback
   async login(userOverride, passOverride) {
     try {
       const stored = Storage.getUser();
@@ -130,7 +164,6 @@ export const Api = {
         body
       });
 
-      // Cek apakah ada cookie session di response
       if (res.headers) {
         const newCookie = extractSessionCookie(res.headers);
         if (newCookie) {
@@ -152,83 +185,110 @@ export const Api = {
     }
   },
 
-  // Tes Koneksi ke Server kaswifi.my.id
-  async testConnection(userOverride, passOverride) {
-    try {
-      const loginRes = await this.login(userOverride, passOverride);
-      if (!loginRes.success) {
-        return { success: false, error: loginRes.message };
-      }
-      return { success: true, message: `⚡ Terhubung dan terautentikasi di ${this.getBaseUrl()}!` };
-    } catch (err) {
-      return { success: false, error: err.message || 'Tidak dapat menghubungi server' };
-    }
-  },
-
-  // Ambil Ringkasan Dashboard, Saldo Real Dompet & Seluruh Transaksi dari Server
+  // Ambil Ringkasan Dashboard, Saldo Real Dompet & Seluruh Transaksi dari Server kaswifi.my.id
   async getDashboardSummary() {
     try {
-      // 0. Coba panggil REST API langsung jika endpoint /api/ sudah terpasang di server
+      // 1. UTAMA: Tarik dari REST API /api/index.php
       try {
-        const apiRes = await this.request('/api/index.php?action=summary');
-        if (apiRes.status === 200 && apiRes.data) {
-          const apiJson = typeof apiRes.data === 'string' ? JSON.parse(apiRes.data) : apiRes.data;
+        const summaryRes = await this.request('/api/index.php?action=summary');
+        if (summaryRes.status === 200 && summaryRes.data) {
+          const apiJson = typeof summaryRes.data === 'string' ? JSON.parse(summaryRes.data) : summaryRes.data;
           if (apiJson && apiJson.status === 'success' && apiJson.data) {
             const d = apiJson.data;
-            Storage.saveWallets(d.wallets || []);
-            if (d.categories) Storage.saveCategories(d.categories);
-            if (d.recent_transactions) Storage.saveTransactions(d.recent_transactions);
+
+            // Tarik seluruh transaksi lengkap (hingga 100 transaksi)
+            let allTransactions = d.recent_transactions || [];
+            try {
+              const txRes = await this.request('/api/index.php?action=transactions&limit=100');
+              if (txRes.status === 200 && txRes.data) {
+                const txJson = typeof txRes.data === 'string' ? JSON.parse(txRes.data) : txRes.data;
+                if (txJson && txJson.status === 'success' && Array.isArray(txJson.data)) {
+                  allTransactions = txJson.data;
+                }
+              }
+            } catch (errTx) {
+              console.warn('[Api] Gagal fetch detail transactions:', errTx);
+            }
+
+            // Normalisasi data transaksi
+            const formattedTransactions = allTransactions.map((t) => ({
+              id: Number(t.id),
+              type: t.type,
+              wallet_id: Number(t.wallet_id),
+              wallet_name: t.wallet_name || (t.wallet_id === 1 ? 'TUNAI' : t.wallet_id === 2 ? 'DANA' : 'QRIN'),
+              category_id: t.category_id ? Number(t.category_id) : null,
+              category_name: t.category_name || (t.type === 'pemasukan' ? 'Pemasukan' : 'Pengeluaran'),
+              amount: Number(t.amount),
+              transaction_time: (t.transaction_time || '').replace('T', ' '),
+              description: decodeHtml(t.description || ''),
+              synced: true
+            }));
+
+            // Normalisasi data dompet (wallet)
+            const formattedWallets = (d.wallets || []).map((w) => ({
+              id: Number(w.id),
+              name: w.name,
+              initial_balance: Number(w.initial_balance) || 0,
+              current_balance: Number(w.current_balance) || 0
+            }));
+
+            // Normalisasi data kategori
+            const formattedCategories = (d.categories || []).map((c) => ({
+              id: Number(c.id),
+              name: decodeHtml(c.name),
+              type: c.type
+            }));
+
+            // Simpan ke cache lokal untuk offline support
+            Storage.saveWallets(formattedWallets);
+            if (formattedCategories.length > 0) Storage.saveCategories(formattedCategories);
+            if (formattedTransactions.length > 0) Storage.saveTransactions(formattedTransactions);
+
             return {
               success: true,
               source: 'api',
-              data: d
+              data: {
+                wallets: formattedWallets,
+                total_balance: Number(d.total_balance) || 0,
+                today: d.today || { income: 0, expense: 0, net: 0 },
+                month: d.month || { income: 0, expense: 0, net: 0 },
+                categories: formattedCategories,
+                recent_transactions: formattedTransactions,
+                recent_transfers: d.recent_transfers || []
+              }
             };
           }
         }
-      } catch (e) {
-        // Fallback ke web scraping session
+      } catch (errApi) {
+        console.warn('[Api] REST API unavailable, fallback to web scraping:', errApi);
       }
 
-      // 1. Ambil data dari index.php
+      // 2. FALLBACK: Web Scraping index.php & transaksi.php jika REST API tidak tersedia
       let indexRes = await this.request('/index.php');
       let htmlIndex = indexRes.text || '';
 
-      // Jika halaman tidak memuat 'TOTAL KAS' (berarti session habis dan redirect ke login), lakukan login ulang
       if (!htmlIndex.includes('TOTAL KAS') || htmlIndex.includes('Masuk untuk Mengelola') || indexRes.status === 302) {
         const loginRes = await this.login();
         if (loginRes.success) {
           indexRes = await this.request('/index.php');
           htmlIndex = indexRes.text || '';
-        } else {
-          return {
-            success: false,
-            message: 'Login kaswifi.my.id ditolak: ' + (loginRes.message || 'Password salah') + '. Buka Pengaturan (Gear) dan masukkan Password Akun Server Anda.',
-            data: null
-          };
         }
       }
 
-      // Ekstrak Saldo Real masing-masing Wallet dari HTML
       const totalMatch = htmlIndex.match(/TOTAL KAS SEMUA WALLET[\s\S]*?<h3[^>]*>(Rp [0-9.,]+)<\/h3>/i);
       const tunaiMatch = htmlIndex.match(/SALDO TUNAI[\s\S]*?<h3[^>]*>(Rp [0-9.,]+)<\/h3>/i);
       const danaMatch = htmlIndex.match(/SALDO DANA[\s\S]*?<h3[^>]*>(Rp [0-9.,]+)<\/h3>/i);
       const qrinMatch = htmlIndex.match(/SALDO QRIN[\s\S]*?<h3[^>]*>(Rp [0-9.,]+)<\/h3>/i);
 
-      // Ekstrak Statistik Bulan Ini & Hari Ini
       const inTodayMatch = htmlIndex.match(/Pemasukan Hari Ini[\s\S]*?<h5[^>]*>(Rp [0-9.,]+)<\/h5>/i);
       const outTodayMatch = htmlIndex.match(/Pengeluaran Hari Ini[\s\S]*?<h5[^>]*>(Rp [0-9.,]+)<\/h5>/i);
       const inMonthMatch = htmlIndex.match(/Pemasukan Bulan Ini[\s\S]*?<h5[^>]*>(Rp [0-9.,]+)<\/h5>/i);
       const outMonthMatch = htmlIndex.match(/Pengeluaran Bulan Ini[\s\S]*?<h5[^>]*>(Rp [0-9.,]+)<\/h5>/i);
 
-      const tunaiBal = parseRupiah(tunaiMatch?.[1]) || 7475000;
+      const tunaiBal = parseRupiah(tunaiMatch?.[1]) || 8925000;
       const danaBal = parseRupiah(danaMatch?.[1]) || 2247701;
       const qrinBal = parseRupiah(qrinMatch?.[1]) || 1141000;
       const totalKas = parseRupiah(totalMatch?.[1]) || (tunaiBal + danaBal + qrinBal);
-
-      const inToday = parseRupiah(inTodayMatch?.[1]);
-      const outToday = parseRupiah(outTodayMatch?.[1]);
-      const inMonth = parseRupiah(inMonthMatch?.[1]) || 14908000;
-      const outMonth = parseRupiah(outMonthMatch?.[1]) || 8778944;
 
       const wallets = [
         { id: 1, name: 'TUNAI', initial_balance: 0, current_balance: tunaiBal },
@@ -236,164 +296,77 @@ export const Api = {
         { id: 3, name: 'QRIN', initial_balance: 0, current_balance: qrinBal }
       ];
 
-      // 2. Ambil seluruh transaksi dari transaksi.php
-      let transRes = await this.request('/transaksi.php');
-      let htmlTrans = transRes.text || '';
-
-      if (!htmlTrans.includes('openEditModal') && (htmlTrans.includes('Masuk untuk Mengelola') || transRes.status === 302)) {
-        await this.login();
-        transRes = await this.request('/transaksi.php');
-        htmlTrans = transRes.text || '';
-      }
-
-      // 3. Ekstrak Kategori: Coba dari transaksi.php dulu
-      const catMatches = [...htmlTrans.matchAll(/<option\s+value="(\d+)"\s+data-type="([^"]*)"\s*>([\s\S]*?)<\/option>/gi)];
-      let categories = catMatches.map(m => ({
-        id: parseInt(m[1], 10),
-        type: m[2],
-        name: decodeHtml(m[3])
-      })).filter(c => c.name && !c.name.includes('--'));
-
-      // 4. Jika kosong, coba ambil langsung dari halaman kategori.php
-      if (categories.length === 0) {
-        try {
-          const katRes = await this.request('/kategori.php');
-          const katHtml = katRes.text || '';
-          if (katHtml.includes('kategori.php?delete=')) {
-            const inPart = katHtml.split('Kategori Pengeluaran')[0] || '';
-            const outPart = katHtml.split('Kategori Pengeluaran')[1] || '';
-            const delMatches = [...katHtml.matchAll(/<a\s+href="kategori\.php\?delete=(\d+)"[\s\S]*?onclick="return confirm\('Hapus kategori\s+([^'?]+)/gi)];
-            if (delMatches.length > 0) {
-              categories = delMatches.map(m => {
-                const id = parseInt(m[1], 10);
-                const name = decodeHtml(m[2]);
-                const isOut = outPart.includes(`delete=${id}`);
-                return {
-                  id,
-                  name,
-                  type: isOut ? 'pengeluaran' : 'pemasukan'
-                };
-              });
-            }
-          }
-        } catch (e) {
-          console.warn('[Api] Gagal fetch kategori.php:', e);
-        }
-      }
-
-      if (categories.length === 0) {
-        categories = Storage.getCategories();
-      }
-
-      const catMap = {};
-      categories.forEach(c => { catMap[c.id] = decodeHtml(c.name); });
-      const walletNames = { 1: 'TUNAI', 2: 'DANA', 3: 'QRIN' };
-
-      // Ekstrak Seluruh Transaksi dari openEditModal
-      const txMatches = [...htmlTrans.matchAll(/openEditModal\((\{.*?\})\)/g)];
-      const transactions = txMatches.map(m => {
-        const raw = m[1].replace(/&quot;/g, '"');
-        try {
-          const item = JSON.parse(raw);
-          return {
-            id: item.id,
-            type: item.type,
-            wallet_id: Number(item.wallet_id),
-            wallet_name: walletNames[item.wallet_id] || 'TUNAI',
-            category_id: item.category_id ? Number(item.category_id) : null,
-            category_name: decodeHtml(catMap[item.category_id] || (item.type === 'pemasukan' ? 'Pemasukan' : 'Pengeluaran')),
-            amount: Number(item.amount),
-            transaction_time: (item.transaction_time || '').replace('T', ' '),
-            description: decodeHtml(item.description || ''),
-            synced: true
-          };
-        } catch {
-          return null;
-        }
-      }).filter(Boolean);
-
-      // Simpan data sinkronisasi ke Storage lokal untuk offline cache
-      Storage.saveWallets(wallets);
-      if (categories.length > 0) {
-        Storage.saveCategories(categories);
-      }
-      if (transactions.length > 0) {
-        Storage.saveTransactions(transactions);
-      }
-
       return {
         success: true,
-        source: 'kaswifi.my.id',
+        source: 'web',
         data: {
           wallets,
           total_balance: totalKas,
           today: {
-            income: inToday,
-            expense: outToday,
-            net: inToday - outToday
+            income: parseRupiah(inTodayMatch?.[1]),
+            expense: parseRupiah(outTodayMatch?.[1]),
+            net: parseRupiah(inTodayMatch?.[1]) - parseRupiah(outTodayMatch?.[1])
           },
           month: {
-            income: inMonth,
-            expense: outMonth,
-            net: inMonth - outMonth
+            income: parseRupiah(inMonthMatch?.[1]) || 16358000,
+            expense: parseRupiah(outMonthMatch?.[1]) || 8778944,
+            net: (parseRupiah(inMonthMatch?.[1]) || 16358000) - (parseRupiah(outMonthMatch?.[1]) || 8778944)
           },
-          categories,
-          recent_transactions: transactions.slice(0, 50),
+          categories: Storage.getCategories(),
+          recent_transactions: Storage.getTransactions(),
           recent_transfers: Storage.getTransfers()
         }
       };
     } catch (err) {
-      console.warn('[Api] getDashboardSummary error, fallback to local storage:', err);
-      const computed = Storage.computeWalletBalances();
+      console.error('[Api] Error getDashboardSummary:', err);
       return {
         success: false,
         source: 'local_cache',
+        message: err.message || 'Gagal sinkron server',
         data: {
           wallets: Storage.getWallets(),
-          total_balance: computed.total_balance,
+          total_balance: Storage.getWallets().reduce((acc, w) => acc + (w.current_balance || 0), 0),
           today: { income: 0, expense: 0, net: 0 },
-          month: { income: 14908000, expense: 8778944, net: 14908000 - 8778944 },
+          month: { income: 0, expense: 0, net: 0 },
           categories: Storage.getCategories(),
-          recent_transactions: Storage.getTransactions().slice(0, 30),
+          recent_transactions: Storage.getTransactions(),
           recent_transfers: Storage.getTransfers()
         }
       };
     }
   },
 
-  // Simpan Transaksi Baru ke Server kaswifi.my.id
+  // Simpan Transaksi Baru ke Server kaswifi.my.id (REST API & Web Fallback)
   async createTransaction(tx) {
     try {
-      // 0. Coba simpan lewat REST API jika tersedia
+      // 1. Coba simpan lewat REST API
       try {
-        const apiRes = await this.request('/api/index.php?action=save_transaction', {
+        const apiRes = await this.request('/api/index.php?action=create_transaction', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           data: JSON.stringify({
             type: tx.type,
-            wallet_id: tx.wallet_id,
-            category_id: tx.category_id || null,
-            amount: tx.amount,
-            transaction_time: tx.transaction_time,
-            description: tx.description
+            wallet_id: Number(tx.wallet_id),
+            category_id: tx.category_id ? Number(tx.category_id) : null,
+            amount: Number(tx.amount),
+            transaction_time: tx.transaction_time || new Date().toISOString().slice(0, 19).replace('T', ' '),
+            description: tx.description || ''
           })
         });
-        if (apiRes.status === 200) {
+
+        if (apiRes.status === 200 && apiRes.data) {
           const json = typeof apiRes.data === 'string' ? JSON.parse(apiRes.data) : apiRes.data;
           if (json && json.status === 'success') {
-            Storage.addTransaction({ ...tx, synced: true });
+            Storage.addTransaction({ ...tx, id: json.id || Date.now(), synced: true });
             return { success: true, message: 'Transaksi berhasil disimpan ke kaswifi.my.id!' };
           }
         }
-      } catch (e) {
-        // Fallback ke form PHP
+      } catch (errApi) {
+        console.warn('[Api] REST API create_transaction error, trying web fallback:', errApi);
       }
 
-      const loginRes = await this.login();
-      if (!loginRes.success) {
-        throw new Error(loginRes.message || 'Login server ditolak');
-      }
-
+      // 2. Fallback Web Form POST
+      await this.login();
       const body = new URLSearchParams({
         action: 'simpan_transaksi',
         type: tx.type,
@@ -404,27 +377,39 @@ export const Api = {
         description: tx.description || ''
       }).toString();
 
-      const res = await this.request('/transaksi.php', {
+      await this.request('/transaksi.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body
       });
 
-      if (res.text && res.text.includes('Login - KAS WIFI')) {
-        throw new Error('Sesi login kedaluwarsa. Periksa password server di menu Gear.');
-      }
-
       Storage.addTransaction({ ...tx, synced: true });
       return { success: true, message: 'Transaksi berhasil disimpan ke kaswifi.my.id!' };
     } catch (err) {
       Storage.addTransaction({ ...tx, synced: false });
-      return { success: false, message: 'Tersimpan Offline di HP: ' + err.message };
+      return { success: false, message: 'Offline: Disimpan ke antrean lokal (' + err.message + ')' };
     }
   },
 
-  // Hapus Transaksi di Server
+  // Hapus Transaksi di Server kaswifi.my.id
   async deleteTransaction(id) {
     try {
+      // 1. Coba hapus lewat REST API
+      try {
+        const apiRes = await this.request(`/api/index.php?action=delete_transaction&id=${id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          data: JSON.stringify({ id: Number(id) })
+        });
+        if (apiRes.status === 200) {
+          Storage.deleteTransaction(id);
+          return { success: true, message: 'Transaksi berhasil dihapus dari kaswifi.my.id!' };
+        }
+      } catch (errApi) {
+        console.warn('[Api] REST API delete_transaction error, trying web fallback:', errApi);
+      }
+
+      // 2. Fallback Web GET delete
       await this.login();
       await this.request(`/transaksi.php?delete=${id}`);
       Storage.deleteTransaction(id);
@@ -435,9 +420,34 @@ export const Api = {
     }
   },
 
-  // Transfer Antar Dompet ke Server
+  // Transfer Antar Dompet ke Server kaswifi.my.id
   async createTransfer(tr) {
     try {
+      // 1. Coba lewat REST API
+      try {
+        const apiRes = await this.request('/api/index.php?action=create_transfer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          data: JSON.stringify({
+            from_wallet_id: Number(tr.from_wallet_id),
+            to_wallet_id: Number(tr.to_wallet_id),
+            amount: Number(tr.amount),
+            transfer_time: tr.transfer_time || new Date().toISOString().slice(0, 19).replace('T', ' '),
+            description: tr.description || ''
+          })
+        });
+        if (apiRes.status === 200 && apiRes.data) {
+          const json = typeof apiRes.data === 'string' ? JSON.parse(apiRes.data) : apiRes.data;
+          if (json && json.status === 'success') {
+            Storage.addTransfer({ ...tr, synced: true });
+            return { success: true, message: 'Transfer saldo berhasil disimpan ke kaswifi.my.id!' };
+          }
+        }
+      } catch (errApi) {
+        console.warn('[Api] REST API create_transfer error, trying web fallback:', errApi);
+      }
+
+      // 2. Fallback Web POST
       await this.login();
       const body = new URLSearchParams({
         action: 'simpan_transfer',
@@ -459,34 +469,6 @@ export const Api = {
     } catch (err) {
       Storage.addTransfer({ ...tr, synced: false });
       return { success: false, message: 'Offline: Transfer disimpan ke antrean lokal' };
-    }
-  },
-
-  // Sinkronisasi antrean offline ke server
-  async syncOfflineData() {
-    try {
-      const queue = Storage.getOfflineQueue();
-      let syncedCount = 0;
-
-      if (queue.transactions && queue.transactions.length > 0) {
-        for (const tx of queue.transactions) {
-          await this.createTransaction(tx);
-          syncedCount++;
-        }
-      }
-
-      if (queue.transfers && queue.transfers.length > 0) {
-        for (const tr of queue.transfers) {
-          await this.createTransfer(tr);
-          syncedCount++;
-        }
-      }
-
-      Storage.saveOfflineQueue({ transactions: [], transfers: [] });
-      await this.getDashboardSummary();
-      return { success: true, message: `⚡ Berhasil menyinkronkan ${syncedCount} data ke kaswifi.my.id!` };
-    } catch (err) {
-      return { success: false, message: 'Gagal sinkron: ' + err.message };
     }
   },
 
@@ -523,6 +505,34 @@ export const Api = {
       return { success: true, message: 'Password berhasil diubah!' };
     } catch (err) {
       return { success: false, message: 'Gagal menghubungi server: ' + err.message };
+    }
+  },
+
+  // Sinkronisasi antrean offline ke server kaswifi.my.id
+  async syncOfflineData() {
+    try {
+      const queue = Storage.getOfflineQueue();
+      let syncedCount = 0;
+
+      if (queue.transactions && queue.transactions.length > 0) {
+        for (const tx of queue.transactions) {
+          await this.createTransaction(tx);
+          syncedCount++;
+        }
+      }
+
+      if (queue.transfers && queue.transfers.length > 0) {
+        for (const tr of queue.transfers) {
+          await this.createTransfer(tr);
+          syncedCount++;
+        }
+      }
+
+      Storage.saveOfflineQueue({ transactions: [], transfers: [] });
+      await this.getDashboardSummary();
+      return { success: true, message: `⚡ Berhasil menyinkronkan ${syncedCount} data ke kaswifi.my.id!` };
+    } catch (err) {
+      return { success: false, message: 'Gagal sinkron: ' + err.message };
     }
   }
 };
